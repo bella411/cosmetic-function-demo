@@ -1,0 +1,19 @@
+{
+  "student_id": "202435020",
+  "name": "원서우",
+  "title": "성분노트: 화장품 성분 기능 분류 및 피부 타입별 추천 데모",
+  "github_url": "https://github.com/bella411/cosmetic-function-demo",
+  "demo_url": "https://cosmetic-function-demo.vercel.app/",
+  "data_type": "공개 CSV 기반 텍스트 다중 라벨 분류 (CosIng)",
+  "training": "Scratch: 사전 학습 가중치 없이 scikit-learn의 Logistic Regression과 Linear SVM을 직접 학습. 추가 비교에서는 고정 MiniLM 임베딩 사용.",
+  "models": [
+    "TF-IDF + OneVsRest Logistic Regression",
+    "TF-IDF + OneVsRest Linear SVM"
+  ],
+  "primary_metric": {
+    "name": "Micro F1",
+    "split": "test",
+    "value": 0.4567,
+    "model": "TF-IDF (성분명+설명) + Linear SVM, C=0.1, threshold=-0.5"
+  }
+}
