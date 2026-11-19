@@ -16,6 +16,12 @@ button,.file-button{display:inline-flex;align-items:center;justify-content:cente
 .skin-ranking{margin-top:18px}.skin-ranking>details{border-top:1px solid #cfdaeb;padding:14px 0;margin:0}.skin-ranking>details>summary{font-size:16px;font-weight:650;color:var(--ink)}.rank-count{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}.ranking-reason{padding:8px 0}.ranking-reason p{overflow-wrap:anywhere}
 .function-badge,.skin-badge,.total-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:9px;font-size:14px;font-weight:650;line-height:1.5;vertical-align:middle;margin:3px 5px 3px 0;max-width:100%;overflow-wrap:anywhere}.function-badge{background:#e3edff;color:#214b96}.fn-humectant{background:#dff2fb;color:#155b7b}.fn-emollient{background:#e3edff;color:#214b96}.fn-sebum{background:#e2f3e8;color:#22623b}.fn-protect{background:#fff0d7;color:#825119}.fn-occlusive{background:#eee6fb;color:#634092}.fn-soothing{background:#fbe7ed;color:#8c3c57}.skin-dry{background:#fff0d7;color:#825119}.skin-oily{background:#dff2fb;color:#155b7b}.skin-combination{background:#eee6fb;color:#634092}.skin-normal{background:#e2f3e8;color:#22623b}.skin-sensitive{background:#fbe7ed;color:#8c3c57}.total-badge{background:#e8edf3;color:#536478}.function-badge.zero{background:#edf0f5;color:#637185;font-weight:400}.function-overview{margin:18px 0}.function-stat{padding:12px 0;border-bottom:1px solid #d8e4fa}.function-stat:last-child{border:0}.type-links{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:7px}.type-links-label{font-size:14px;color:var(--muted);margin-right:6px}.function-count-sentence{display:flex;align-items:center;flex-wrap:wrap;gap:4px}.reason-heading{display:flex;align-items:center;flex-wrap:wrap;gap:3px;font-weight:650}
 </style>
+<style>
+/* Function = filled label; skin type = colored typography without a container. */
+.skin-badge{display:inline;background:transparent;padding:0;border:0;border-radius:0;font-size:1em;font-weight:750;line-height:inherit;margin:0 5px 0 0;vertical-align:baseline}
+.skin-dry{background:transparent;color:#865316}.skin-oily{background:transparent;color:#176680}.skin-combination{background:transparent;color:#7549a3}.skin-normal{background:transparent;color:#287048}.skin-sensitive{background:transparent;color:#a34565}
+.recommendation-headline{margin:4px 0 16px!important;line-height:1.6}.recommendation-headline .skin-badge{margin:0}.type-links .skin-badge{margin-right:12px;font-size:15px}.skin-ranking>details>summary>.skin-badge{font-size:17px;margin-right:10px}.guide-row{padding:17px 0;border-bottom:1px solid var(--line)}.guide-row:last-child{border:0}.guide-title{margin:0 0 7px;font-size:18px}.guide-functions{display:flex;flex-wrap:wrap;gap:4px}.guide-row p{margin-top:6px}.guide-group{font-size:14px;color:var(--muted);margin:8px 0 3px}
+</style>
 </head>
 <body>
 <main>
@@ -33,6 +39,7 @@ button,.file-button{display:inline-flex;align-items:center;justify-content:cente
 <div class="actions"><button class="primary" id="analyze">확인한 성분 분석하기</button><button id="samples">시연용 예시 불러오기</button></div><p id="example-note" class="callout" hidden>검증 데이터에서 예측이 맞은 사례입니다. 전체 성능을 대표하지 않습니다. 입력을 편집하면 예시 성분 안내만 유지됩니다.</p><p id="status" class="status" role="status" aria-live="polite"></p>
 </section>
 <section id="results" class="panel" hidden aria-labelledby="result-title"><div class="step">RESULT · 성분 기능 기반 추천</div><h2 id="result-title">피부 타입별 추천 결과</h2><p id="model-result" class="note"></p><details id="result-excluded" hidden><summary>분석에서 제외된 항목</summary><p id="result-excluded-names" class="note" style="overflow-wrap:anywhere"></p></details><div id="recommendation" class="recommendation" aria-live="polite"></div><div class="callout">분석된 성분의 기능과 개발자가 정한 관리 기준에 따른 참고용 추천입니다. 성분 개수는 함량이나 효과의 크기가 아니며, 실제 피부 적합성은 검증하지 않았습니다. 제형·개인 반응·미조회 성분은 순위에 반영되지 않습니다.</div><details id="ingredient-predictions"><summary>성분별 모델 예측 자세히 보기</summary><div id="result-list"></div></details></section>
+<section class="panel" aria-labelledby="guide-title"><h2 id="guide-title">피부 타입별 관리 기능 가이드</h2><p class="note">어떤 기능을 기준으로 추천하는지 살펴보세요. 아래는 이번 제품의 분석 결과가 아닌, 서비스에 적용한 일반 관리 기준입니다.</p><div id="skin-guide"></div><p class="note">피부 보호는 공통 기능 정보로 표시합니다. 민감성의 경우 기능 외에 자극 반응·향·제품 제형을 별도로 확인해야 합니다.</p><details><summary>관리 기준의 출처와 적용 범위</summary><p class="note">학회와 의료기관 자료의 관리 방향을 참고해 개발자가 기능을 연결했습니다. 이 연결이나 성분 개수 기반 순위가 임상적으로 검증된 것은 아닙니다.</p><div id="guide-sources" class="note"></div></details></section>
 <footer>TF-IDF + Linear SVM · 피부 보습 / 피부 유연화 / 피지 조절 / 피부 보호 / 수분 증발 억제 / 불편감 완화<br>OCR은 기존 도구를 사용하며, 기능 분류는 직접 학습한 모델을 사용합니다.</footer>
 </main>
 <script>
@@ -121,6 +128,22 @@ function addFunctionBadge(parent,label,count){
   return appendText(parent,'span',`${typeof count==='number'?`${count}개 · `:''}${FUNCTION_NAMES[label]}`,`function-badge ${FUNCTION_STYLE[label]||''}${count===0?' zero':''}`);
 }
 function addSkinBadge(parent,skin){return appendText(parent,'span',skin,`skin-badge ${SKIN_STYLE[skin]||''}`);}
+function renderSkinGuide(){
+  const container=$('skin-guide');container.replaceChildren();
+  for(const [skin,rule] of Object.entries(SKIN_RULES)){
+    const row=document.createElement('div');row.className='guide-row';
+    const title=document.createElement('h3');title.className='guide-title';addSkinBadge(title,skin);row.appendChild(title);
+    appendText(row,'p',rule.goal,'note');
+    for(const group of rule.groups){
+      if(rule.groups.length>1)appendText(row,'p',group.title,'guide-group');
+      const labels=document.createElement('div');labels.className='guide-functions';group.labels.forEach(label=>addFunctionBadge(labels,label));row.appendChild(labels);
+    }
+    if(skin==='민감성')appendText(row,'p','불편감 완화 기능이 저자극이나 알레르기 예방을 보장하지는 않습니다.','note');
+    container.appendChild(row);
+  }
+  const sources=$('guide-sources');sources.replaceChildren();
+  Object.values(RULE_SOURCES).forEach((source,i)=>{if(i)appendText(sources,'span',' · ');const a=appendText(sources,'a',source.title);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';});
+}
 function renderFunctionOverview(parent,ingredientsByFunction,analyzedCount){
   const section=document.createElement('div');section.className='function-overview';
   appendText(section,'p','기능별 분류 결과','result-label');
@@ -153,7 +176,10 @@ function renderSkinRankings(results){
   else{
     const winners=rankings.filter(r=>r.count===topCount).map(r=>r.skin);
     appendText(box,'p','분석된 성분의 기능 기준으로','result-label');
-    appendText(box,'h3',winners.length===1?`이 화장품은 ${winners[0]} 피부에 우선 추천해요`:`이 화장품은 ${winners.join('·')} 피부에 공동 추천해요`);
+    appendText(box,'p','이 화장품은');
+    const headline=document.createElement('h3');headline.className='recommendation-headline';
+    winners.forEach((skin,i)=>{if(i)appendText(headline,'span',' · ');addSkinBadge(headline,skin);});
+    appendText(headline,'span',' 피부에 추천해요');box.appendChild(headline);
   }
   renderFunctionOverview(box,ingredientsByFunction,analyzedCount);
   appendText(box,'p','피부 타입별 추천 이유','result-label');
@@ -342,6 +368,7 @@ $('analyze').addEventListener('click',async()=>{
   try{const data=await requestJSON({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ingredients})});if(!Array.isArray(data.results))throw new Error('예측 응답 형식을 확인해 주세요.');renderResults(data);setStatus('status','분석이 완료되었습니다.');}catch(error){setStatus('status',error.message,true);}finally{analyzeBusy=false;$('analyze').disabled=false;$('samples').disabled=false;$('ocr').disabled=!imageBlob;$('camera').disabled=false;$('gallery').disabled=false;$('split').disabled=false;$('ingredients').readOnly=false;}
 });
 window.addEventListener('pagehide',()=>{if(previewURL)URL.revokeObjectURL(previewURL);});
+renderSkinGuide();
 </script>
 </body>
 </html>
