@@ -102,10 +102,13 @@ def prepare_ocr_text(text):
                             'status': 'review', 'suggestions': sorted(suggestions)[:3]})
     unique = {}
     for record in records:
+        if record['status'] != 'review' and not bundle['description_lookup'].get(record['name'], '').strip():
+            record['status'] = 'description_unavailable'
         unique.setdefault(record['name'], record)
     return {'records': list(unique.values()),
-            'names': list(unique),
-            'note': '등록명 대조 결과이며 모델 예측이 아닙니다. 철자와 CI 번호는 원본 사진으로 확인해 주세요.'}
+            'names': [r['name'] for r in unique.values()
+                      if r['status'] in {'matched', 'normalized', 'alias'}],
+            'note': '등록명 또는 설명을 확인하지 못한 항목은 분석 목록에서 제외했습니다. 원문은 별도로 보존됩니다.'}
 
 
 def analyze(names):
