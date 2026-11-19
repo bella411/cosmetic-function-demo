@@ -1,171 +1,141 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>화장품 성분 기능 분석</title>
+<meta name="theme-color" content="#2357c6">
+<title>성분노트 · 촬영하고 확인하는 성분 기능</title>
 <style>
-* { box-sizing: border-box; }
-body {
-  margin: 0; background: #f5f7fa; color: #202936;
-  font-family: system-ui, sans-serif;
-}
-main { max-width: 850px; margin: 50px auto; padding: 24px; }
-h1 { font-size: 28px; }
-p { line-height: 1.7; }
-.panel {
-  background: white; padding: 24px; border-radius: 16px;
-  margin-top: 20px; border: 1px solid #e2e7ee;
-}
-label { display: block; font-weight: 600; margin-bottom: 10px; }
-textarea {
-  width: 100%; min-height: 180px; padding: 14px;
-  border: 1px solid #bbc5d1; border-radius: 10px;
-  font: inherit; resize: vertical;
-}
-.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-button {
-  padding: 12px 18px; border-radius: 9px; border: 1px solid #cad3df;
-  background: white; font: inherit; cursor: pointer;
-}
-.primary { background: #2357c6; color: white; border-color: #2357c6; }
-button:disabled { opacity: .6; cursor: wait; }
-.note { color: #576579; font-size: 14px; }
-.result { padding: 18px 0; border-bottom: 1px solid #e2e7ee; }
-.result:last-child { border-bottom: 0; }
-.result h3 { overflow-wrap: anywhere; }
-.badge {
-  display: inline-block; background: #eaf1ff; color: #214a93;
-  padding: 7px 11px; margin: 4px; border-radius: 20px;
-}
-#status { min-height: 24px; }
+:root{color-scheme:light;--blue:#2357c6;--ink:#172638;--muted:#536478;--line:#dce4ed}
+*{box-sizing:border-box}body{margin:0;background:#f3f6fa;color:var(--ink);font-family:system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.6}
+main{max-width:920px;margin:auto;padding:28px 20px 60px}header{padding:18px 0 12px}.brand{font-weight:750;color:var(--blue);letter-spacing:.05em}h1{font-size:clamp(26px,5vw,38px);line-height:1.25;margin:12px 0}h2{font-size:22px;margin:0 0 16px}h3{font-size:18px;margin:0 0 8px;overflow-wrap:anywhere}p{margin:8px 0}.muted,.note{color:var(--muted)}.note{font-size:14px}.panel{background:white;border:1px solid var(--line);border-radius:20px;padding:24px;margin-top:20px}.step{color:var(--blue);font-size:14px;font-weight:700;margin-bottom:6px}.choices{display:flex;flex-wrap:wrap;gap:10px}.choice{position:relative}.choice input{position:absolute;opacity:0}.choice span{display:block;border:1px solid var(--line);border-radius:12px;padding:10px 18px;cursor:pointer}.choice input:checked+span{background:#eaf0ff;color:var(--blue);border-color:var(--blue)}.choice input:focus-visible+span{outline:3px solid #84a6fb;outline-offset:3px}
+button,.file-button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 17px;border-radius:12px;border:1px solid #b9c8da;background:white;color:var(--ink);font:inherit;font-weight:600;cursor:pointer;text-align:center}.primary{background:var(--blue);color:white;border-color:var(--blue)}button:disabled{opacity:.55;cursor:wait}.actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.file-button input{position:absolute;width:1px;height:1px;opacity:0}.file-button:focus-within{outline:3px solid #84a6fb;outline-offset:2px}label.field-label{display:block;font-weight:650;margin:16px 0 8px}textarea{width:100%;min-height:160px;border:1px solid #b9c8da;border-radius:12px;padding:14px;font:inherit;line-height:1.5;resize:vertical}textarea:focus{outline:2px solid #84a6fb;outline-offset:2px}.preview{max-width:100%;max-height:330px;display:block;object-fit:contain;margin:16px auto;border-radius:10px}.status{min-height:28px;color:var(--blue)}progress{width:100%;height:10px;accent-color:var(--blue)}.callout{border-left:3px solid #8ca9dd;padding:8px 12px;background:#f4f7fd;margin:12px 0;font-size:14px}.result{padding:18px 0;border-bottom:1px solid var(--line)}.result:last-child{border:0}.badge{display:inline-block;padding:5px 11px;background:#eaf0ff;color:#204b9c;border-radius:20px;margin:4px 5px 4px 0}.result-label{font-size:14px;color:var(--muted)}details{margin-top:12px}summary{cursor:pointer;color:var(--muted)}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px;margin-top:10px}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}.error{color:#a22b29}[hidden]{display:none!important}footer{font-size:14px;color:var(--muted);margin-top:26px}@media(max-width:520px){main{padding:16px 14px 40px}.panel{padding:20px 16px;border-radius:16px}.actions>*{flex:1 1 140px}.choices{gap:8px}.choice span{padding:9px 13px}}
 </style>
 </head>
 <body>
 <main>
-  <h1>화장품 성분 기능 분석</h1>
-  <p>
-    직접 학습한 TF-IDF + Linear SVM 모델로
-    성분의 6가지 기능을 예측하는 실험용 데모입니다.
-  </p>
-
-  <section class="panel">
-    <label for="ingredients">영문 INCI 성분명</label>
-    <textarea id="ingredients"
-      placeholder="한 줄에 성분 하나씩 입력하세요.&#10;GLYCERIN&#10;NIACINAMIDE"></textarea>
-
-    <div class="actions">
-      <button id="analyze" class="primary">성분 분석하기</button>
-      <button id="samples">시연용 예시 불러오기</button>
-    </div>
-
-    <p class="note">
-      예시는 검증 데이터에서 예측이 맞은 사례로 선정했으며,
-      전체 성능을 대표하지 않습니다.
-    </p>
-    <p id="status" role="status" aria-live="polite"></p>
-  </section>
-
-  <section id="results" class="panel" hidden>
-    <h2>학습한 SVM의 예측 결과</h2>
-    <p class="note">
-      결과는 성분 기능의 추정이며, 개인 피부 적합도나 실제 효능의 판정이 아닙니다.
-      양성 예측이 없어도 기능이 전혀 없다는 의미는 아닙니다.
-    </p>
-    <div id="result-list"></div>
-  </section>
+<header><div class="brand">성분노트</div><h1>성분표를 찍고,<br>성분의 기능을 확인하세요.</h1><p class="muted">사진에서 읽은 성분명을 확인한 뒤, 직접 학습한 SVM으로 6가지 기능을 예측합니다.</p></header>
+<section class="panel" aria-labelledby="skin-title"><div class="step">STEP 1 · 선택 사항</div><h2 id="skin-title">내 피부 타입</h2><div class="choices" role="group" aria-label="피부 타입">
+<label class="choice"><input type="radio" name="skin" value="건성"><span>건성</span></label><label class="choice"><input type="radio" name="skin" value="지성"><span>지성</span></label><label class="choice"><input type="radio" name="skin" value="복합성"><span>복합성</span></label><label class="choice"><input type="radio" name="skin" value="중성"><span>중성</span></label><label class="choice"><input type="radio" name="skin" value="민감성"><span>민감성</span></label></div><p class="note">선택한 타입은 결과에 함께 표시합니다. 현재 모델은 피부 타입별 적합성을 학습하지 않았습니다.</p></section>
+<section class="panel" aria-labelledby="photo-title"><div class="step">STEP 2 · 성분표 준비</div><h2 id="photo-title">사진을 찍거나 선택하세요</h2><p class="note">영문 INCI 성분표를 정면에서 선명하게 촬영해 주세요. 한글을 읽을 수는 있지만 영문 성분명으로 자동 변환하지는 않습니다.</p>
+<div class="actions"><label class="file-button primary">카메라로 촬영<input id="camera" type="file" accept="image/*" capture="environment"></label><label class="file-button">사진 선택<input id="gallery" type="file" accept="image/*"></label></div>
+<img id="preview" class="preview" alt="선택한 성분표 사진" hidden>
+<button id="ocr" disabled>사진에서 글자 읽기</button><p id="ocr-status" class="status" role="status" aria-live="polite"></p><progress id="progress" max="1" value="0" hidden aria-label="글자 인식 진행률"></progress>
+<p class="note">사진의 글자 인식은 브라우저에서 처리합니다. 첫 실행에는 OCR 파일 다운로드가 필요합니다.</p>
+</section>
+<section class="panel" aria-labelledby="review-title"><div class="step">STEP 3 · 확인 후 분석</div><h2 id="review-title">읽어낸 성분명을 확인하세요</h2><details><summary>OCR 원문 확인 · 다시 편집하기</summary><label class="field-label" for="raw-text">사진에서 읽은 원문</label><textarea id="raw-text" placeholder="사진에서 읽은 글자가 여기에 표시됩니다."></textarea><button id="split" type="button">원문을 성분 목록으로 나누기</button></details>
+<label class="field-label" for="ingredients">영문 성분명 · 한 줄에 하나씩</label><textarea id="ingredients" placeholder="직접 입력해도 됩니다.&#10;GLYCERIN&#10;NIACINAMIDE" spellcheck="false"></textarea>
+<p class="note">쉼표와 줄바꿈 분리가 정확한지, 철자가 맞는지 확인해 주세요. 한글 성분명은 영문 INCI 이름으로 직접 수정해야 합니다.</p>
+<div class="actions"><button class="primary" id="analyze">확인한 성분 분석하기</button><button id="samples">시연용 예시 불러오기</button></div><p id="example-note" class="callout" hidden>검증 데이터에서 예측이 맞은 사례입니다. 전체 성능을 대표하지 않습니다. 입력을 편집하면 예시 성분 안내만 유지됩니다.</p><p id="status" class="status" role="status" aria-live="polite"></p>
+</section>
+<section id="results" class="panel" hidden aria-labelledby="result-title"><div class="step">RESULT · 직접 학습한 모델</div><h2 id="result-title">성분 기능 예측</h2><p id="skin-result" class="note"></p><p id="model-result" class="note"></p><div class="callout">피부 적합도나 실제 효능을 판정하는 결과가 아닙니다. 양성 예측이 없어도 성분에 기능이 전혀 없다는 의미는 아닙니다.</div><div id="result-list"></div></section>
+<footer>TF-IDF + Linear SVM · 피부 보습 / 피부 유연화 / 피지 조절 / 피부 보호 / 수분 증발 억제 / 불편감 완화<br>OCR은 기존 도구를 사용하며, 기능 분류는 직접 학습한 모델을 사용합니다.</footer>
 </main>
-
 <script>
-const input = document.getElementById("ingredients");
-const status = document.getElementById("status");
-const analyzeButton = document.getElementById("analyze");
-const sampleButton = document.getElementById("samples");
-
-sampleButton.addEventListener("click", async () => {
-  sampleButton.disabled = true;
-  status.textContent = "예시 성분을 불러오는 중입니다.";
-
-  try {
-    const response = await fetch("/api/predict");
-    if (!response.ok) throw new Error("예시를 불러오지 못했습니다.");
-
-    const data = await response.json();
-    if (!data.samples?.length) throw new Error("저장된 예시가 없습니다.");
-
-    input.value = data.samples.join("\n");
-    status.textContent = "예시를 불러왔습니다. 성분 분석하기를 눌러 주세요.";
-  } catch (error) {
-    status.textContent = error.message;
-  } finally {
-    sampleButton.disabled = false;
+const $ = id => document.getElementById(id);
+let imageBlob = null, worker = null, workerPromise = null, previewURL = null, isOCRBusy = false, analyzeBusy = false;
+function setStatus(id, text, error=false){$(id).textContent=text;$(id).classList.toggle('error',error);}
+function normalizeName(value){return value.normalize('NFKC').replace(/\s+/g,' ').trim().toUpperCase();}
+function uniqueNames(text){return [...new Set(text.split(/\r?\n/).map(normalizeName).filter(Boolean))];}
+function splitIngredients(text){
+  text=text.normalize('NFKC').replace(/^\s*(?:INGREDIENTS|INCI)\s*[:：]\s*/i,'').trim();
+  let depth=0, hasDelimiter=false;
+  for(const ch of text){if(ch==='('||ch==='[')depth++;else if(ch===')'||ch===']')depth=Math.max(0,depth-1);else if(depth===0&&[',',';','，','；'].includes(ch))hasDelimiter=true;}
+  if(!hasDelimiter)return uniqueNames(text).join('\n');
+  const parts=[];let current='';depth=0;
+  for(const ch of text){
+    if(ch==='('||ch==='[')depth++;else if(ch===')'||ch===']')depth=Math.max(0,depth-1);
+    if(depth===0&&[',',';','，','；'].includes(ch)){parts.push(current);current='';}else current+=ch;
   }
+  parts.push(current);
+  return [...new Set(parts.map(normalizeName).filter(Boolean))].join('\n');
+}
+async function requestJSON(options){
+  const response=await fetch('/api/predict',options);
+  const text=await response.text();let data;
+  try{data=JSON.parse(text);}catch{throw new Error(`예측 서버 응답 오류 (${response.status}). 배포 상태와 /api/predict를 확인해 주세요.`);}
+  if(!response.ok)throw new Error(data.error||`요청 실패 (${response.status})`);
+  return data;
+}
+async function choosePhoto(event){
+  const file=event.target.files?.[0];event.target.value='';if(!file)return;
+  if(file.size>15*1024*1024){setStatus('ocr-status','사진은 15MB 이하로 선택해 주세요.',true);return;}
+  $('ocr').disabled=true;imageBlob=null;
+  if(previewURL){URL.revokeObjectURL(previewURL);previewURL=null;}
+  $('preview').hidden=true;
+  setStatus('ocr-status','사진을 준비하는 중입니다.');
+  try{
+    const sourceURL=URL.createObjectURL(file);
+    const img=new Image();
+    try{await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=sourceURL;});}finally{URL.revokeObjectURL(sourceURL);}
+    const scale=Math.min(1,2400/Math.max(img.naturalWidth,img.naturalHeight));
+    const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+    canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+    imageBlob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.94));
+    if(!imageBlob)throw new Error('이미지 변환 실패');
+    previewURL=URL.createObjectURL(imageBlob);$('preview').src=previewURL;$('preview').hidden=false;$('raw-text').value='';
+    $('results').hidden=true;setStatus('ocr-status','사진을 확인하고 글자 읽기를 눌러 주세요.');
+  }catch{setStatus('ocr-status','사진을 열지 못했습니다. JPEG 또는 PNG 사진으로 다시 선택해 주세요.',true);}
+  $('ocr').disabled=!imageBlob;
+}
+$('camera').addEventListener('change',choosePhoto);$('gallery').addEventListener('change',choosePhoto);
+function loadOCRScript(){
+  if(window.Tesseract)return Promise.resolve();
+  return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@6/dist/tesseract.min.js';script.onload=resolve;script.onerror=()=>{script.remove();reject(new Error('OCR 파일 다운로드에 실패했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.'));};document.head.appendChild(script);});
+}
+async function getWorker(){
+  if(worker)return worker;
+  if(!workerPromise)workerPromise=(async()=>{await loadOCRScript();return Tesseract.createWorker('eng+kor',1,{logger:message=>{
+    if(message.status==='recognizing text'){$('progress').value=message.progress;setStatus('ocr-status',`사진에서 글자를 읽는 중… ${Math.round(message.progress*100)}%`);}
+  }});})();
+  try{worker=await workerPromise;return worker;}catch(error){workerPromise=null;throw error;}
+}
+$('ocr').addEventListener('click',async()=>{
+  if(!imageBlob||isOCRBusy)return;
+  if($('ingredients').value.trim()&&!confirm('현재 성분 목록을 사진에서 읽은 글자로 바꿀까요?'))return;
+  isOCRBusy=true;$('ocr').disabled=true;$('camera').disabled=true;$('gallery').disabled=true;$('analyze').disabled=true;$('samples').disabled=true;$('split').disabled=true;
+  $('progress').hidden=false;$('progress').value=0;setStatus('ocr-status','글자 인식 도구를 준비합니다. 첫 실행에는 잠시 걸릴 수 있습니다.');
+  try{
+    const ocr=await getWorker();const output=await ocr.recognize(imageBlob);const text=output.data.text.trim();
+    if(!text)throw new Error('글자를 찾지 못했습니다. 성분표 부분을 크게 다시 촬영해 주세요.');
+    $('raw-text').value=text;$('ingredients').value=splitIngredients(text);$('example-note').hidden=true;$('results').hidden=true;
+    setStatus('ocr-status',/[가-힣]/.test(text)?'글자를 읽었습니다. 한글 성분명은 영문 INCI 이름으로 수정해 주세요.':'글자를 읽었습니다. 성분명과 줄바꿈을 확인해 주세요.');
+    $('review-title').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(error){setStatus('ocr-status',error.message||'글자 인식에 실패했습니다. 다시 시도해 주세요.',true);}
+  finally{isOCRBusy=false;$('ocr').disabled=false;$('camera').disabled=false;$('gallery').disabled=false;$('analyze').disabled=analyzeBusy;$('samples').disabled=false;$('split').disabled=false;$('progress').hidden=true;}
 });
-
-analyzeButton.addEventListener("click", async () => {
-  const ingredients = [...new Set(
-    input.value.split("\n").map(value => value.trim()).filter(Boolean)
-  )];
-
-  if (!ingredients.length || ingredients.length > 100) {
-    status.textContent = "성분명을 한 줄에 하나씩, 1~100개 입력해 주세요.";
-    return;
-  }
-
-  analyzeButton.disabled = true;
-  document.getElementById("results").hidden = true;
-  status.textContent = "저장된 모델로 예측하는 중입니다.";
-
-  try {
-    const response = await fetch("/api/predict", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ingredients })
-    });
-
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "분석에 실패했습니다.");
-
-    const list = document.getElementById("result-list");
-    list.replaceChildren();
-
-    for (const result of data.results) {
-      const article = document.createElement("article");
-      article.className = "result";
-
-      const title = document.createElement("h3");
-      title.textContent = result.ingredient;
-      article.appendChild(title);
-
-      const predicted = result.functions.filter(item => item.predicted);
-
-      if (result.status !== "predicted" || !predicted.length) {
-        const message = document.createElement("p");
-        message.textContent = result.status !== "predicted"
-          ? result.message
-          : "선택한 6개 기능 중 양성 예측 없음";
-        article.appendChild(message);
-      } else {
-        for (const item of predicted) {
-          const badge = document.createElement("span");
-          badge.className = "badge";
-          badge.textContent = item.name;
-          article.appendChild(badge);
-        }
-      }
-
-      list.appendChild(article);
-    }
-
-    document.getElementById("results").hidden = false;
-    status.textContent = `${data.results.length}개 성분 분석 완료`;
-  } catch (error) {
-    status.textContent = error.message;
-  } finally {
-    analyzeButton.disabled = false;
-  }
+$('split').addEventListener('click',()=>{if(!$('raw-text').value.trim())return;if($('ingredients').value.trim()&&!confirm('현재 성분 목록을 원문에서 다시 만들까요?'))return;$('ingredients').value=splitIngredients($('raw-text').value);$('results').hidden=true;});
+$('ingredients').addEventListener('input',()=>{$('results').hidden=true;});
+document.querySelectorAll('input[name="skin"]').forEach(el=>el.addEventListener('change',()=>{if(!$('results').hidden)$('skin-result').textContent=`선택한 피부 타입: ${el.value} · 기능 예측 자체에는 피부 타입이 사용되지 않습니다.`;}));
+$('samples').addEventListener('click',async()=>{
+  if($('ingredients').value.trim()&&!confirm('현재 입력을 시연용 예시로 바꿀까요?'))return;
+  $('samples').disabled=true;setStatus('status','예시를 불러오는 중입니다.');
+  try{const data=await requestJSON();if(!data.samples?.length)throw new Error('저장된 예시가 없습니다.');$('ingredients').value=data.samples.join('\n');$('example-note').hidden=false;$('results').hidden=true;setStatus('status','예시를 불러왔습니다. 분석 버튼을 눌러 주세요.');}catch(error){setStatus('status',error.message,true);}finally{$('samples').disabled=false;}
 });
+function renderResults(data,skin){
+  const list=$('result-list');list.replaceChildren();let completed=0;
+  for(const result of data.results){
+    const article=document.createElement('article');article.className='result';const heading=document.createElement('h3');heading.textContent=result.ingredient;article.appendChild(heading);
+    const functions=result.functions||[];const positive=functions.filter(f=>f.predicted);
+    if(result.status==='predicted')completed++;
+    if(result.status!=='predicted'||!positive.length){const p=document.createElement('p');p.textContent=result.status!=='predicted'?result.message:'선택한 6개 기능 중 양성 예측 없음';article.appendChild(p);}
+    else for(const f of positive){const badge=document.createElement('span');badge.className='badge';badge.textContent=f.name;article.appendChild(badge);}
+    if(functions.length){const detail=document.createElement('details');const summary=document.createElement('summary');summary.textContent='6개 기능별 모델 점수 보기';detail.appendChild(summary);const wrap=document.createElement('div');wrap.className='table-wrap';const table=document.createElement('table');const head=table.createTHead().insertRow();for(const text of ['기능','SVM 결정 점수','예측']){const th=document.createElement('th');th.scope='col';th.textContent=text;head.appendChild(th);}const body=table.createTBody();for(const f of functions){const row=body.insertRow();for(const text of [f.name,Number(f.score).toFixed(4),f.predicted?'양성':'음성'])row.insertCell().textContent=text;}wrap.appendChild(table);detail.appendChild(wrap);const note=document.createElement('p');note.className='note';note.textContent='SVM 결정 점수는 확률이나 피부 적합도 점수가 아닙니다.';detail.appendChild(note);article.appendChild(detail);}
+    list.appendChild(article);
+  }
+  $('skin-result').textContent=skin?`선택한 피부 타입: ${skin} · 기능 예측 자체에는 피부 타입이 사용되지 않습니다.`:'피부 타입 미선택 · 성분 기능 예측 결과입니다.';
+  $('model-result').textContent=`${data.results.length}개 성분 중 ${completed}개 예측 완료 · ${data.results.length-completed}개 예측 보류`;
+  $('results').hidden=false;$('result-title').scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('analyze').addEventListener('click',async()=>{
+  const ingredients=uniqueNames($('ingredients').value);if(!ingredients.length||ingredients.length>100){setStatus('status','성분명을 한 줄에 하나씩, 1~100개 입력해 주세요.',true);return;}
+  if(ingredients.some(n=>n.length>3000)){setStatus('status','너무 긴 항목이 있습니다. 성분별 줄바꿈을 확인해 주세요.',true);return;}
+  if(ingredients.some(n=>/[가-힣]/.test(n))){setStatus('status','한글 성분명이 포함되어 있습니다. 영문 INCI 이름으로 수정한 뒤 분석해 주세요.',true);return;}
+  const skin=document.querySelector('input[name="skin"]:checked')?.value;
+  analyzeBusy=true;$('analyze').disabled=true;$('samples').disabled=true;$('ocr').disabled=true;$('camera').disabled=true;$('gallery').disabled=true;$('split').disabled=true;$('ingredients').readOnly=true;$('results').hidden=true;setStatus('status','저장한 SVM으로 성분 기능을 예측합니다.');
+  try{const data=await requestJSON({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ingredients})});if(!Array.isArray(data.results))throw new Error('예측 응답 형식을 확인해 주세요.');renderResults(data,skin);setStatus('status','분석이 완료되었습니다.');}catch(error){setStatus('status',error.message,true);}finally{analyzeBusy=false;$('analyze').disabled=false;$('samples').disabled=false;$('ocr').disabled=!imageBlob;$('camera').disabled=false;$('gallery').disabled=false;$('split').disabled=false;$('ingredients').readOnly=false;}
+});
+window.addEventListener('pagehide',()=>{if(previewURL)URL.revokeObjectURL(previewURL);});
 </script>
 </body>
 </html>
