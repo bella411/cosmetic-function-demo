@@ -61,6 +61,31 @@ const SKIN_RULES = {
   '중성':{goal:'기본 보습과 현재 상태 유지',groups:[{title:'기본 관리',labels:[H,E]}],tip:'특별한 문제를 가정하기보다 기본 보습을 유지하는 방향입니다. 다른 기능이 없다는 이유로 제품을 부적합하게 판정하지 않습니다.',sources:['types']},
   '민감성':{goal:'자극 최소화와 보습 관리',groups:[{title:'보습·편안함과 관련된 기능',labels:[H,S]}],tip:'불편감 완화 라벨은 저자극 인증이 아닙니다. 무향 여부와 기존에 반응했던 성분을 별도로 확인하세요. 피부 보호 라벨도 장벽 회복이나 민감성 적합성을 뜻하지 않습니다.',sources:['sensitive']}
 };
+// Explain only positively predicted functions; do not substitute one function for another.
+const SKIN_FUNCTION_REASONS = {
+  '건성':{
+    [H]:'피부 표층의 수분을 보충하는 관리 목적과 연결되어 건성 피부에 추천했어요.',
+    [E]:'건조해 거칠어진 피부를 부드럽고 매끄럽게 가꾸는 관리 목적과 연결되어 추천했어요. 수분 공급 기능과는 구분됩니다.',
+    [O]:'피부 표면에서 수분이 증발하는 것을 줄이는 관리 목적과 연결되어 건성 피부에 추천했어요.'
+  },
+  '지성':{
+    [H]:'지성도 보습이 필요하므로, 유분 관리와 함께 수분을 보충하는 관리 목적으로 추천했어요.',
+    [A]:'과도한 피지를 조절하려는 관리 목적과 연결되어 지성 피부에 추천했어요. 여드름 개선을 판정한 것은 아니에요.'
+  },
+  '복합성':{
+    [H]:'건조한 부위의 수분을 보충하는 관리 목적으로 추천했어요.',
+    [E]:'복합성 피부에서 건조하고 거친 부위를 부드럽게 관리하는 목적으로 추천했어요. 유분이 많은 부위까지 같은 상태로 판단한 것은 아니에요.',
+    [A]:'T존처럼 유분이 많은 부위의 피지 관리 목적으로 추천했어요.'
+  },
+  '중성':{
+    [H]:'현재 피부 상태를 유지하면서 기본적인 수분 관리를 하는 목적으로 추천했어요.',
+    [E]:'피부를 부드럽고 매끄럽게 유지하는 기본 관리 목적으로 추천했어요.'
+  },
+  '민감성':{
+    [H]:'민감성 피부의 기본 보습 관리 목적으로 추천했어요. 이 기능만으로 저자극 여부를 판단할 수는 없어요.',
+    [S]:'피부·두피의 불편감을 완화하는 관리 목적과 연결되어 추천했어요. 알레르기 예방이나 저자극 인증을 뜻하지는 않아요.'
+  }
+};
 function buildSkinRankings(results){
   const ingredientsByFunction=new Map();const analyzedNames=new Set();
   for(const result of results){
@@ -96,25 +121,33 @@ function renderSkinRankings(results){
     const winners=rankings.filter(r=>r.count===topCount).map(r=>r.skin);
     appendText(box,'p','분석된 성분의 기능 기준으로','result-label');
     appendText(box,'h3',winners.length===1?`이 화장품은 ${winners[0]} 피부에 우선 추천해요`:`이 화장품은 ${winners.join('·')} 피부에 공동 추천해요`);
-    appendText(box,'p',`분석한 ${analyzedCount}개 성분 중 ${topCount}개가 해당 관리 목적과 연결됩니다. 어떤 기능 때문인지 아래 항목을 눌러 확인하세요.`);
+    const keyFunctions=[...new Set(rankings.filter(r=>r.count===topCount).flatMap(r=>r.matched))];
+    appendText(box,'p','추천의 핵심 기능','result-label');
+    const highlights=document.createElement('div');
+    for(const label of keyFunctions)appendText(highlights,'span',FUNCTION_NAMES[label],'badge');
+    box.appendChild(highlights);
+    appendText(box,'p','아래 피부 타입을 누르면 해당 기능이 왜 추천 이유가 되는지 볼 수 있어요.','note');
   }
   const list=document.createElement('div');list.className='skin-ranking';
   for(const entry of rankings){
     const item=document.createElement('details');
     const tied=rankings.filter(r=>r.count===entry.count).length>1;
     const summary=appendText(item,'summary',entry.count?`${tied?'공동 ':''}${entry.rank}위 · ${entry.skin}`:`${entry.skin} · 추천 근거 부족`);
-    appendText(summary,'span',`관련 성분 ${entry.count}개`,'rank-count');
-    appendText(item,'p',entry.rule.goal,'note');
+    appendText(summary,'span',entry.matched.length?entry.matched.map(label=>FUNCTION_NAMES[label]).join(' · '):'연결 기능 없음','rank-count');
     if(entry.matched.length){for(const label of entry.matched){
       const reason=document.createElement('div');reason.className='ranking-reason';
-      appendText(reason,'strong',FUNCTION_NAMES[label]);
-      appendText(reason,'p',[...ingredientsByFunction.get(label)].join(', '),'note');item.appendChild(reason);
+      appendText(reason,'strong',`${FUNCTION_NAMES[label]} 때문에 추천해요`);
+      appendText(reason,'p',SKIN_FUNCTION_REASONS[entry.skin][label]);
+      item.appendChild(reason);
     }}else appendText(item,'p','이 관리 목적에 연결되는 양성 예측이 없습니다.','note');
     const missing=entry.targets.filter(label=>!entry.matched.includes(label));
-    if(missing.length)appendText(item,'p',`추가로 확인할 기능: ${missing.map(label=>FUNCTION_NAMES[label]).join(', ')}`,'note');
-    appendText(item,'p',entry.rule.tip,'note');
+    const evidence=document.createElement('details');appendText(evidence,'summary','관련 성분·추천 기준 보기');
+    appendText(evidence,'p',`관리 목적과 연결된 성분 ${entry.count}개 / 분석 성분 ${analyzedCount}개. 성분 수 기준 순위이며 함량 비교는 아닙니다.`,'note');
+    for(const label of entry.matched)appendText(evidence,'p',`${FUNCTION_NAMES[label]}: ${[...ingredientsByFunction.get(label)].join(', ')}`,'note');
+    if(missing.length)appendText(evidence,'p',`이번 모델에서 확인하지 못한 기능: ${missing.map(label=>FUNCTION_NAMES[label]).join(', ')}`,'note');
+    appendText(evidence,'p',entry.rule.tip,'note');
     const sources=document.createElement('div');sources.className='note';appendText(sources,'span','참고 자료: ');
-    entry.rule.sources.forEach((key,i)=>{if(i)appendText(sources,'span',' · ');const source=RULE_SOURCES[key];const a=appendText(sources,'a',source.title);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';});item.appendChild(sources);
+    entry.rule.sources.forEach((key,i)=>{if(i)appendText(sources,'span',' · ');const source=RULE_SOURCES[key];const a=appendText(sources,'a',source.title);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';});evidence.appendChild(sources);item.appendChild(evidence);
     list.appendChild(item);
   }
   box.appendChild(list);
