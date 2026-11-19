@@ -11,12 +11,15 @@
 main{max-width:920px;margin:auto;padding:28px 20px 60px}header{padding:18px 0 12px}.brand{font-weight:750;color:var(--blue);letter-spacing:.05em}h1{font-size:clamp(26px,5vw,38px);line-height:1.25;margin:12px 0}h2{font-size:22px;margin:0 0 16px}h3{font-size:18px;margin:0 0 8px;overflow-wrap:anywhere}p{margin:8px 0}.muted,.note{color:var(--muted)}.note{font-size:14px}.panel{background:white;border:1px solid var(--line);border-radius:20px;padding:24px;margin-top:20px}.step{color:var(--blue);font-size:14px;font-weight:700;margin-bottom:6px}.choices{display:flex;flex-wrap:wrap;gap:10px}.choice{position:relative}.choice input{position:absolute;opacity:0}.choice span{display:block;border:1px solid var(--line);border-radius:12px;padding:10px 18px;cursor:pointer}.choice input:checked+span{background:#eaf0ff;color:var(--blue);border-color:var(--blue)}.choice input:focus-visible+span{outline:3px solid #84a6fb;outline-offset:3px}
 button,.file-button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 17px;border-radius:12px;border:1px solid #b9c8da;background:white;color:var(--ink);font:inherit;font-weight:600;cursor:pointer;text-align:center}.primary{background:var(--blue);color:white;border-color:var(--blue)}button:disabled{opacity:.55;cursor:wait}.actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.file-button input{position:absolute;width:1px;height:1px;opacity:0}.file-button:focus-within{outline:3px solid #84a6fb;outline-offset:2px}label.field-label{display:block;font-weight:650;margin:16px 0 8px}textarea{width:100%;min-height:160px;border:1px solid #b9c8da;border-radius:12px;padding:14px;font:inherit;line-height:1.5;resize:vertical}textarea:focus{outline:2px solid #84a6fb;outline-offset:2px}.preview{max-width:100%;max-height:330px;display:block;object-fit:contain;margin:16px auto;border-radius:10px}.status{min-height:28px;color:var(--blue)}progress{width:100%;height:10px;accent-color:var(--blue)}.callout{border-left:3px solid #8ca9dd;padding:8px 12px;background:#f4f7fd;margin:12px 0;font-size:14px}.result{padding:18px 0;border-bottom:1px solid var(--line)}.result:last-child{border:0}.badge{display:inline-block;padding:5px 11px;background:#eaf0ff;color:#204b9c;border-radius:20px;margin:4px 5px 4px 0}.result-label{font-size:14px;color:var(--muted)}details{margin-top:12px}summary{cursor:pointer;color:var(--muted)}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px;margin-top:10px}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}.error{color:#a22b29}[hidden]{display:none!important}footer{font-size:14px;color:var(--muted);margin-top:26px}@media(max-width:520px){main{padding:16px 14px 40px}.panel{padding:20px 16px;border-radius:16px}.actions>*{flex:1 1 140px}.choices{gap:8px}.choice span{padding:9px 13px}}
 </style>
+<style>
+.recommendation{margin:20px 0;padding:20px;background:#f3f7ff;border-radius:14px;border:1px solid #d8e4fa}.recommendation h3{font-size:21px}.rule-item{margin:12px 0;padding:12px 0;border-top:1px solid #d8e4fa}.rule-item p{overflow-wrap:anywhere}.rule-item strong{display:block}.source-list{padding-left:22px}.source-list a{color:#2357c6}.section-title{margin-top:26px}
+</style>
 </head>
 <body>
 <main>
 <header><div class="brand">성분노트</div><h1>성분표를 찍고,<br>성분의 기능을 확인하세요.</h1><p class="muted">사진에서 읽은 성분명을 확인한 뒤, 직접 학습한 SVM으로 6가지 기능을 예측합니다.</p></header>
 <section class="panel" aria-labelledby="skin-title"><div class="step">STEP 1 · 선택 사항</div><h2 id="skin-title">내 피부 타입</h2><div class="choices" role="group" aria-label="피부 타입">
-<label class="choice"><input type="radio" name="skin" value="건성"><span>건성</span></label><label class="choice"><input type="radio" name="skin" value="지성"><span>지성</span></label><label class="choice"><input type="radio" name="skin" value="복합성"><span>복합성</span></label><label class="choice"><input type="radio" name="skin" value="중성"><span>중성</span></label><label class="choice"><input type="radio" name="skin" value="민감성"><span>민감성</span></label></div><p class="note">선택한 타입은 결과에 함께 표시합니다. 현재 모델은 피부 타입별 적합성을 학습하지 않았습니다.</p></section>
+<label class="choice"><input type="radio" name="skin" value="건성"><span>건성</span></label><label class="choice"><input type="radio" name="skin" value="지성"><span>지성</span></label><label class="choice"><input type="radio" name="skin" value="복합성"><span>복합성</span></label><label class="choice"><input type="radio" name="skin" value="중성"><span>중성</span></label><label class="choice"><input type="radio" name="skin" value="민감성"><span>민감성</span></label></div><p class="note">피부 타입별 관리 목적과 예측된 기능을 연결해 안내합니다. 타입을 선택하지 않아도 성분 분석은 가능합니다.</p></section>
 <section class="panel" aria-labelledby="photo-title"><div class="step">STEP 2 · 성분표 준비</div><h2 id="photo-title">사진을 찍거나 선택하세요</h2><p class="note">영문 INCI 성분표를 정면에서 선명하게 촬영해 주세요. 한글을 읽을 수는 있지만 영문 성분명으로 자동 변환하지는 않습니다.</p>
 <div class="actions"><label class="file-button primary">카메라로 촬영<input id="camera" type="file" accept="image/*" capture="environment"></label><label class="file-button">사진 선택<input id="gallery" type="file" accept="image/*"></label></div>
 <img id="preview" class="preview" alt="선택한 성분표 사진" hidden>
@@ -28,12 +31,77 @@ button,.file-button{display:inline-flex;align-items:center;justify-content:cente
 <p class="note">쉼표와 줄바꿈 분리가 정확한지, 철자가 맞는지 확인해 주세요. 한글 성분명은 영문 INCI 이름으로 직접 수정해야 합니다.</p>
 <div class="actions"><button class="primary" id="analyze">확인한 성분 분석하기</button><button id="samples">시연용 예시 불러오기</button></div><p id="example-note" class="callout" hidden>검증 데이터에서 예측이 맞은 사례입니다. 전체 성능을 대표하지 않습니다. 입력을 편집하면 예시 성분 안내만 유지됩니다.</p><p id="status" class="status" role="status" aria-live="polite"></p>
 </section>
-<section id="results" class="panel" hidden aria-labelledby="result-title"><div class="step">RESULT · 직접 학습한 모델</div><h2 id="result-title">성분 기능 예측</h2><p id="skin-result" class="note"></p><p id="model-result" class="note"></p><div class="callout">피부 적합도나 실제 효능을 판정하는 결과가 아닙니다. 양성 예측이 없어도 성분에 기능이 전혀 없다는 의미는 아닙니다.</div><div id="result-list"></div></section>
+<section id="results" class="panel" hidden aria-labelledby="result-title"><div class="step">RESULT · 직접 학습한 모델과 관리 기준</div><h2 id="result-title">내 피부 타입과 연결되는 기능</h2><p id="skin-result" class="note"></p><p id="model-result" class="note"></p><div id="recommendation" class="recommendation" aria-live="polite"></div><div class="callout">성분 기능은 학습한 SVM의 추정이고, 피부 타입 연결은 자료를 참고한 개발자 규칙입니다. 함량·제형·개인 반응은 반영하지 않으며, 개인 적합성이나 효과를 보장하지 않습니다.</div><h3 class="section-title">성분별 모델 예측</h3><div id="result-list"></div></section>
 <footer>TF-IDF + Linear SVM · 피부 보습 / 피부 유연화 / 피지 조절 / 피부 보호 / 수분 증발 억제 / 불편감 완화<br>OCR은 기존 도구를 사용하며, 기능 분류는 직접 학습한 모델을 사용합니다.</footer>
 </main>
 <script>
 const $ = id => document.getElementById(id);
 let imageBlob = null, worker = null, workerPromise = null, previewURL = null, isOCRBusy = false, analyzeBusy = false;
+let lastAnalysis = null;
+const FUNCTION_NAMES = {
+  'SKIN CONDITIONING - HUMECTANT':'피부 보습',
+  'SKIN CONDITIONING - EMOLLIENT':'피부 유연화',
+  'ANTI-SEBUM':'피지 조절',
+  'SKIN PROTECTING':'피부 보호',
+  'SKIN CONDITIONING - OCCLUSIVE':'수분 증발 억제',
+  'SOOTHING':'피부·두피 불편감 완화'
+};
+const H='SKIN CONDITIONING - HUMECTANT', E='SKIN CONDITIONING - EMOLLIENT', O='SKIN CONDITIONING - OCCLUSIVE', A='ANTI-SEBUM', S='SOOTHING';
+const RULE_SOURCES = {
+  kda:{title:'대한피부과학회 · 보습제',url:'https://derma.or.kr/new/general/treatment.php?mod=document&uid=3326'},
+  oily:{title:'미국피부과학회 · 지성 피부 관리',url:'https://www.aad.org/public/everyday-care/skin-care-basics/dry/oily-skin'},
+  types:{title:'Cleveland Clinic · 피부 타입별 관리',url:'https://health.clevelandclinic.org/understanding-skin-types'},
+  sensitive:{title:'피부 관리 전문가 합의 논문 (2023)',url:'https://doi.org/10.1111/jocd.15519'}
+};
+const SKIN_RULES = {
+  '건성':{goal:'수분 보충과 수분 유지',groups:[{title:'건조함 관리',labels:[H,E,O]}],tip:'보습·유연화·수분 증발 억제 관련 기능을 함께 살펴보세요. 제품의 크림·연고 제형과 실제 보습 설명도 확인하세요.',sources:['kda']},
+  '지성':{goal:'과도한 유분 관리와 보습 유지',groups:[{title:'유분·수분 관리',labels:[H,A]}],tip:'지성도 보습이 필요합니다. 피지 조절 기능은 관리 목적과의 연결 정보이며 효과를 보장하지 않습니다. 가벼운 제형, oil-free·noncomedogenic 표시는 별도로 확인하세요.',sources:['oily']},
+  '복합성':{goal:'부위에 따른 보습·유분 관리',groups:[{title:'건조한 부위에서 살펴볼 기능',labels:[H,E]},{title:'유분이 많은 부위에서 살펴볼 기능',labels:[H,A]}],tip:'건조한 부위와 유분이 많은 부위의 관리 목적을 나누어 보세요. 이 결과는 얼굴의 실제 부위별 상태를 측정한 것이 아닙니다.',sources:['types','kda']},
+  '중성':{goal:'기본 보습과 현재 상태 유지',groups:[{title:'기본 관리',labels:[H,E]}],tip:'특별한 문제를 가정하기보다 기본 보습을 유지하는 방향입니다. 다른 기능이 없다는 이유로 제품을 부적합하게 판정하지 않습니다.',sources:['types']},
+  '민감성':{goal:'자극 최소화와 보습 관리',groups:[{title:'보습·편안함과 관련된 기능',labels:[H,S]}],tip:'불편감 완화 라벨은 저자극 인증이 아닙니다. 무향 여부와 기존에 반응했던 성분을 별도로 확인하세요. 피부 보호 라벨도 장벽 회복이나 민감성 적합성을 뜻하지 않습니다.',sources:['sensitive']}
+};
+function buildSkinRecommendation(results,skin){
+  const rule=SKIN_RULES[skin];if(!rule)return null;
+  const ingredientsByFunction=new Map();let completed=0;
+  for(const result of results){
+    if(result.status!=='predicted')continue;completed++;
+    for(const f of result.functions||[]){
+      if(!f.predicted)continue;
+      if(!ingredientsByFunction.has(f.label))ingredientsByFunction.set(f.label,new Set());
+      ingredientsByFunction.get(f.label).add(result.ingredient);
+    }
+  }
+  const targets=[...new Set(rule.groups.flatMap(group=>group.labels))];
+  const matched=targets.filter(label=>ingredientsByFunction.has(label));
+  return {skin,rule,completed,total:results.length,matched,targets,ingredientsByFunction};
+}
+function appendText(parent,tag,text,className){const el=document.createElement(tag);el.textContent=text;if(className)el.className=className;parent.appendChild(el);return el;}
+function renderSkinRecommendation(results,skin){
+  const box=$('recommendation');box.replaceChildren();const report=buildSkinRecommendation(results,skin);
+  if(!report){appendText(box,'h3','피부 타입을 선택하면 관리 기준을 함께 볼 수 있어요');appendText(box,'p','위에서 타입을 선택해도 성분을 다시 분석할 필요는 없습니다.','note');return;}
+  const {rule,completed,total,matched,targets,ingredientsByFunction}=report;
+  appendText(box,'p',`${skin} · ${rule.goal}`,'result-label');
+  appendText(box,'h3',completed===0?'설명 정보를 확인하지 못해 추천 연결을 보류했어요':matched.length?`${skin}의 관리 목적과 연결되는 기능이 있어요`:'현재 예측만으로 추천할 정보가 부족해요');
+  if(completed){appendText(box,'p',`설정한 관심 기능 ${targets.length}개 중 ${matched.length}개가 모델의 양성 예측과 연결됩니다.`);}
+  if(completed<total)appendText(box,'p',`${total-completed}개 성분은 예측이 보류되어 이 요약에 반영되지 않았습니다.`,'note');
+  if(completed){for(const group of rule.groups){
+    appendText(box,'h4',group.title);
+    for(const label of group.labels){
+      const names=[...(ingredientsByFunction.get(label)||[])];
+      const item=document.createElement('div');item.className='rule-item';
+      appendText(item,'strong',`${FUNCTION_NAMES[label]} · ${names.length?'관련 기능 예측 있음':'추가 확인 필요'}`);
+      appendText(item,'p',names.length?`관련 성분: ${names.join(', ')}`:'현재 모델에서 해당 기능이 확인되지 않았습니다. 제품 설명이나 등록 정보를 추가로 확인하세요.','note');
+      box.appendChild(item);
+    }
+  }}
+  appendText(box,'p',rule.tip);
+  appendText(box,'p','항목의 일치 여부를 설명하는 데모 규칙입니다. 성분 함량의 우세나 실제 적합 확률을 계산한 결과는 아닙니다.','note');
+  const details=document.createElement('details');appendText(details,'summary','추천 방향의 근거와 적용 범위');
+  appendText(details,'p','아래 자료의 관리 방향을 참고하여 개발자가 기능 연결 규칙을 정했습니다. 자료가 이 모델의 예측이나 제품 추천을 검증한 것은 아닙니다. 민감성 관련 논문은 질환 동반 사례도 다루므로 일반 피부에 그대로 적용할 수 없습니다.','note');
+  const sources=document.createElement('ul');sources.className='source-list';
+  for(const key of rule.sources){const source=RULE_SOURCES[key];const li=document.createElement('li');const a=appendText(li,'a',source.title);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';sources.appendChild(li);}
+  details.appendChild(sources);box.appendChild(details);
+}
 function setStatus(id, text, error=false){$(id).textContent=text;$(id).classList.toggle('error',error);}
 function normalizeName(value){return value.normalize('NFKC').replace(/\s+/g,' ').trim().toUpperCase();}
 function uniqueNames(text){return [...new Set(text.split(/\r?\n/).map(normalizeName).filter(Boolean))];}
@@ -106,13 +174,14 @@ $('ocr').addEventListener('click',async()=>{
 });
 $('split').addEventListener('click',()=>{if(!$('raw-text').value.trim())return;if($('ingredients').value.trim()&&!confirm('현재 성분 목록을 원문에서 다시 만들까요?'))return;$('ingredients').value=splitIngredients($('raw-text').value);$('results').hidden=true;});
 $('ingredients').addEventListener('input',()=>{$('results').hidden=true;});
-document.querySelectorAll('input[name="skin"]').forEach(el=>el.addEventListener('change',()=>{if(!$('results').hidden)$('skin-result').textContent=`선택한 피부 타입: ${el.value} · 기능 예측 자체에는 피부 타입이 사용되지 않습니다.`;}));
+document.querySelectorAll('input[name="skin"]').forEach(el=>el.addEventListener('change',()=>{if(!$('results').hidden&&lastAnalysis){$('skin-result').textContent=`선택한 피부 타입: ${el.value}`;renderSkinRecommendation(lastAnalysis.results,el.value);}}));
 $('samples').addEventListener('click',async()=>{
   if($('ingredients').value.trim()&&!confirm('현재 입력을 시연용 예시로 바꿀까요?'))return;
   $('samples').disabled=true;setStatus('status','예시를 불러오는 중입니다.');
   try{const data=await requestJSON();if(!data.samples?.length)throw new Error('저장된 예시가 없습니다.');$('ingredients').value=data.samples.join('\n');$('example-note').hidden=false;$('results').hidden=true;setStatus('status','예시를 불러왔습니다. 분석 버튼을 눌러 주세요.');}catch(error){setStatus('status',error.message,true);}finally{$('samples').disabled=false;}
 });
 function renderResults(data,skin){
+  lastAnalysis=data;
   const list=$('result-list');list.replaceChildren();let completed=0;
   for(const result of data.results){
     const article=document.createElement('article');article.className='result';const heading=document.createElement('h3');heading.textContent=result.ingredient;article.appendChild(heading);
@@ -123,7 +192,8 @@ function renderResults(data,skin){
     if(functions.length){const detail=document.createElement('details');const summary=document.createElement('summary');summary.textContent='6개 기능별 모델 점수 보기';detail.appendChild(summary);const wrap=document.createElement('div');wrap.className='table-wrap';const table=document.createElement('table');const head=table.createTHead().insertRow();for(const text of ['기능','SVM 결정 점수','예측']){const th=document.createElement('th');th.scope='col';th.textContent=text;head.appendChild(th);}const body=table.createTBody();for(const f of functions){const row=body.insertRow();for(const text of [f.name,Number(f.score).toFixed(4),f.predicted?'양성':'음성'])row.insertCell().textContent=text;}wrap.appendChild(table);detail.appendChild(wrap);const note=document.createElement('p');note.className='note';note.textContent='SVM 결정 점수는 확률이나 피부 적합도 점수가 아닙니다.';detail.appendChild(note);article.appendChild(detail);}
     list.appendChild(article);
   }
-  $('skin-result').textContent=skin?`선택한 피부 타입: ${skin} · 기능 예측 자체에는 피부 타입이 사용되지 않습니다.`:'피부 타입 미선택 · 성분 기능 예측 결과입니다.';
+  $('skin-result').textContent=skin?`선택한 피부 타입: ${skin}`:'피부 타입 미선택';
+  renderSkinRecommendation(data.results,skin);
   $('model-result').textContent=`${data.results.length}개 성분 중 ${completed}개 예측 완료 · ${data.results.length-completed}개 예측 보류`;
   $('results').hidden=false;$('result-title').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -131,9 +201,8 @@ $('analyze').addEventListener('click',async()=>{
   const ingredients=uniqueNames($('ingredients').value);if(!ingredients.length||ingredients.length>100){setStatus('status','성분명을 한 줄에 하나씩, 1~100개 입력해 주세요.',true);return;}
   if(ingredients.some(n=>n.length>3000)){setStatus('status','너무 긴 항목이 있습니다. 성분별 줄바꿈을 확인해 주세요.',true);return;}
   if(ingredients.some(n=>/[가-힣]/.test(n))){setStatus('status','한글 성분명이 포함되어 있습니다. 영문 INCI 이름으로 수정한 뒤 분석해 주세요.',true);return;}
-  const skin=document.querySelector('input[name="skin"]:checked')?.value;
   analyzeBusy=true;$('analyze').disabled=true;$('samples').disabled=true;$('ocr').disabled=true;$('camera').disabled=true;$('gallery').disabled=true;$('split').disabled=true;$('ingredients').readOnly=true;$('results').hidden=true;setStatus('status','저장한 SVM으로 성분 기능을 예측합니다.');
-  try{const data=await requestJSON({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ingredients})});if(!Array.isArray(data.results))throw new Error('예측 응답 형식을 확인해 주세요.');renderResults(data,skin);setStatus('status','분석이 완료되었습니다.');}catch(error){setStatus('status',error.message,true);}finally{analyzeBusy=false;$('analyze').disabled=false;$('samples').disabled=false;$('ocr').disabled=!imageBlob;$('camera').disabled=false;$('gallery').disabled=false;$('split').disabled=false;$('ingredients').readOnly=false;}
+  try{const data=await requestJSON({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ingredients})});if(!Array.isArray(data.results))throw new Error('예측 응답 형식을 확인해 주세요.');renderResults(data,document.querySelector('input[name="skin"]:checked')?.value);setStatus('status','분석이 완료되었습니다.');}catch(error){setStatus('status',error.message,true);}finally{analyzeBusy=false;$('analyze').disabled=false;$('samples').disabled=false;$('ocr').disabled=!imageBlob;$('camera').disabled=false;$('gallery').disabled=false;$('split').disabled=false;$('ingredients').readOnly=false;}
 });
 window.addEventListener('pagehide',()=>{if(previewURL)URL.revokeObjectURL(previewURL);});
 </script>
