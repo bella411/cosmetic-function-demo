@@ -32,7 +32,7 @@ button,.file-button{display:inline-flex;align-items:center;justify-content:cente
 <p class="note">조회 가능한 영문 성분만 분석 목록에 남깁니다. 제외된 내용은 토글과 OCR 원문에서 확인할 수 있습니다.</p>
 <div class="actions"><button class="primary" id="analyze">확인한 성분 분석하기</button><button id="samples">시연용 예시 불러오기</button></div><p id="example-note" class="callout" hidden>검증 데이터에서 예측이 맞은 사례입니다. 전체 성능을 대표하지 않습니다. 입력을 편집하면 예시 성분 안내만 유지됩니다.</p><p id="status" class="status" role="status" aria-live="polite"></p>
 </section>
-<section id="results" class="panel" hidden aria-labelledby="result-title"><div class="step">RESULT · 직접 학습한 모델과 관리 기준</div><h2 id="result-title">내 피부 타입과 연결되는 기능</h2><p id="skin-result" class="note"></p><p id="model-result" class="note"></p><details id="result-excluded" hidden><summary>분석에서 제외된 항목</summary><p id="result-excluded-names" class="note" style="overflow-wrap:anywhere"></p></details><div id="recommendation" class="recommendation" aria-live="polite"></div><div class="callout">조회 가능한 일부 성분을 기준으로 한 결과입니다. 성분 기능은 SVM의 추정이고 피부 타입 연결은 자료를 참고한 개발자 규칙입니다. 함량·제형·개인 반응은 반영하지 않습니다.</div><h3 class="section-title">성분별 모델 예측</h3><div id="result-list"></div></section>
+<section id="results" class="panel" hidden aria-labelledby="result-title"><div class="step">RESULT · 직접 학습한 모델과 관리 기준</div><h2 id="result-title">내 피부 타입과 연결되는 기능</h2><p id="skin-result" class="note"></p><p id="model-result" class="note"></p><details id="result-excluded" hidden><summary>분석에서 제외된 항목</summary><p id="result-excluded-names" class="note" style="overflow-wrap:anywhere"></p></details><div id="recommendation" class="recommendation" aria-live="polite"></div><div class="callout">조회 가능한 일부 성분을 기준으로 한 결과입니다. 성분 기능은 SVM의 추정이고 피부 타입 연결은 자료를 참고한 개발자 규칙입니다. 함량·제형·개인 반응은 반영하지 않습니다.</div><details id="ingredient-predictions"><summary>성분별 모델 예측 자세히 보기</summary><div id="result-list"></div></details></section>
 <footer>TF-IDF + Linear SVM · 피부 보습 / 피부 유연화 / 피지 조절 / 피부 보호 / 수분 증발 억제 / 불편감 완화<br>OCR은 기존 도구를 사용하며, 기능 분류는 직접 학습한 모델을 사용합니다.</footer>
 </main>
 <script>
@@ -231,6 +231,7 @@ $('samples').addEventListener('click',async()=>{
 });
 function renderResults(data,skin){
   lastAnalysis=data;
+  $('ingredient-predictions').open=false;
   const list=$('result-list');list.replaceChildren();let completed=0;
   for(const result of data.results){
     if(result.status!=='predicted')continue;
