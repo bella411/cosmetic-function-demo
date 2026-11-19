@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>화장품 성분 기능 분석</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: #f5f7fa; color: #202936;
+  font-family: system-ui, sans-serif;
+}
+main { max-width: 850px; margin: 50px auto; padding: 24px; }
+h1 { font-size: 28px; }
+p { line-height: 1.7; }
+.panel {
+  background: white; padding: 24px; border-radius: 16px;
+  margin-top: 20px; border: 1px solid #e2e7ee;
+}
+label { display: block; font-weight: 600; margin-bottom: 10px; }
+textarea {
+  width: 100%; min-height: 180px; padding: 14px;
+  border: 1px solid #bbc5d1; border-radius: 10px;
+  font: inherit; resize: vertical;
+}
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+button {
+  padding: 12px 18px; border-radius: 9px; border: 1px solid #cad3df;
+  background: white; font: inherit; cursor: pointer;
+}
+.primary { background: #2357c6; color: white; border-color: #2357c6; }
+button:disabled { opacity: .6; cursor: wait; }
+.note { color: #576579; font-size: 14px; }
+.result { padding: 18px 0; border-bottom: 1px solid #e2e7ee; }
+.result:last-child { border-bottom: 0; }
+.result h3 { overflow-wrap: anywhere; }
+.badge {
+  display: inline-block; background: #eaf1ff; color: #214a93;
+  padding: 7px 11px; margin: 4px; border-radius: 20px;
+}
+#status { min-height: 24px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>화장품 성분 기능 분석</h1>
+  <p>
+    직접 학습한 TF-IDF + Linear SVM 모델로
+    성분의 6가지 기능을 예측하는 실험용 데모입니다.
+  </p>
+
+  <section class="panel">
+    <label for="ingredients">영문 INCI 성분명</label>
+    <textarea id="ingredients"
+      placeholder="한 줄에 성분 하나씩 입력하세요.&#10;GLYCERIN&#10;NIACINAMIDE"></textarea>
+
+    <div class="actions">
+      <button id="analyze" class="primary">성분 분석하기</button>
+      <button id="samples">시연용 예시 불러오기</button>
+    </div>
+
+    <p class="note">
+      예시는 검증 데이터에서 예측이 맞은 사례로 선정했으며,
+      전체 성능을 대표하지 않습니다.
+    </p>
+    <p id="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <section id="results" class="panel" hidden>
+    <h2>학습한 SVM의 예측 결과</h2>
+    <p class="note">
+      결과는 성분 기능의 추정이며, 개인 피부 적합도나 실제 효능의 판정이 아닙니다.
+      양성 예측이 없어도 기능이 전혀 없다는 의미는 아닙니다.
+    </p>
+    <div id="result-list"></div>
+  </section>
+</main>
+
+<script>
+const input = document.getElementById("ingredients");
+const status = document.getElementById("status");
+const analyzeButton = document.getElementById("analyze");
+const sampleButton = document.getElementById("samples");
+
+sampleButton.addEventListener("click", async () => {
+  sampleButton.disabled = true;
+  status.textContent = "예시 성분을 불러오는 중입니다.";
+
+  try {
+    const response = await fetch("/api/predict");
+    if (!response.ok) throw new Error("예시를 불러오지 못했습니다.");
+
+    const data = await response.json();
+    if (!data.samples?.length) throw new Error("저장된 예시가 없습니다.");
+
+    input.value = data.samples.join("\n");
+    status.textContent = "예시를 불러왔습니다. 성분 분석하기를 눌러 주세요.";
+  } catch (error) {
+    status.textContent = error.message;
+  } finally {
+    sampleButton.disabled = false;
+  }
+});
+
+analyzeButton.addEventListener("click", async () => {
+  const ingredients = [...new Set(
+    input.value.split("\n").map(value => value.trim()).filter(Boolean)
+  )];
+
+  if (!ingredients.length || ingredients.length > 100) {
+    status.textContent = "성분명을 한 줄에 하나씩, 1~100개 입력해 주세요.";
+    return;
+  }
+
+  analyzeButton.disabled = true;
+  document.getElementById("results").hidden = true;
+  status.textContent = "저장된 모델로 예측하는 중입니다.";
+
+  try {
+    const response = await fetch("/api/predict", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ingredients })
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "분석에 실패했습니다.");
+
+    const list = document.getElementById("result-list");
+    list.replaceChildren();
+
+    for (const result of data.results) {
+      const article = document.createElement("article");
+      article.className = "result";
+
+      const title = document.createElement("h3");
+      title.textContent = result.ingredient;
+      article.appendChild(title);
+
+      const predicted = result.functions.filter(item => item.predicted);
+
+      if (result.status !== "predicted" || !predicted.length) {
+        const message = document.createElement("p");
+        message.textContent = result.status !== "predicted"
+          ? result.message
+          : "선택한 6개 기능 중 양성 예측 없음";
+        article.appendChild(message);
+      } else {
+        for (const item of predicted) {
+          const badge = document.createElement("span");
+          badge.className = "badge";
+          badge.textContent = item.name;
+          article.appendChild(badge);
+        }
+      }
+
+      list.appendChild(article);
+    }
+
+    document.getElementById("results").hidden = false;
+    status.textContent = `${data.results.length}개 성분 분석 완료`;
+  } catch (error) {
+    status.textContent = error.message;
+  } finally {
+    analyzeButton.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
