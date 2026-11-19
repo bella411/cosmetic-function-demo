@@ -1,1 +1,1 @@
-# cosmetic-function-demo-
+# cosmetic-function-demo
