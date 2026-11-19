@@ -13,6 +13,7 @@ button,.file-button{display:inline-flex;align-items:center;justify-content:cente
 </style>
 <style>
 .recommendation{margin:20px 0;padding:20px;background:#f3f7ff;border-radius:14px;border:1px solid #d8e4fa}.recommendation h3{font-size:21px}.rule-item{margin:12px 0;padding:12px 0;border-top:1px solid #d8e4fa}.rule-item p{overflow-wrap:anywhere}.rule-item strong{display:block}.source-list{padding-left:22px}.source-list a{color:#2357c6}.section-title{margin-top:26px}
+.skin-ranking{margin-top:18px}.skin-ranking>details{border-top:1px solid #cfdaeb;padding:14px 0;margin:0}.skin-ranking>details>summary{font-size:16px;font-weight:650;color:var(--ink)}.rank-count{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}.ranking-reason{padding:8px 0}.ranking-reason p{overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -21,18 +22,22 @@ button,.file-button{display:inline-flex;align-items:center;justify-content:cente
 <section class="panel" aria-labelledby="skin-title"><div class="step">STEP 1 · 선택 사항</div><h2 id="skin-title">내 피부 타입</h2><div class="choices" role="group" aria-label="피부 타입">
 <label class="choice"><input type="radio" name="skin" value="건성"><span>건성</span></label><label class="choice"><input type="radio" name="skin" value="지성"><span>지성</span></label><label class="choice"><input type="radio" name="skin" value="복합성"><span>복합성</span></label><label class="choice"><input type="radio" name="skin" value="중성"><span>중성</span></label><label class="choice"><input type="radio" name="skin" value="민감성"><span>민감성</span></label></div><p class="note">피부 타입별 관리 목적과 예측된 기능을 연결해 안내합니다. 타입을 선택하지 않아도 성분 분석은 가능합니다.</p></section>
 <section class="panel" aria-labelledby="photo-title"><div class="step">STEP 2 · 성분표 준비</div><h2 id="photo-title">사진을 찍거나 선택하세요</h2><p class="note">영문 INCI 성분표를 정면에서 선명하게 촬영해 주세요. 한글을 읽을 수는 있지만 영문 성분명으로 자동 변환하지는 않습니다.</p>
+<header><div class="brand">성분노트</div><h1>이 화장품,<br>어떤 피부에 추천할까요?</h1><p class="muted">성분표를 촬영하면 직접 학습한 SVM으로 기능을 분석하고, 기능 기준의 피부 타입별 추천 순위를 안내합니다.</p></header>
+<section class="panel" aria-labelledby="photo-title"><div class="step">STEP 1 · 성분표 준비</div><h2 id="photo-title">사진을 찍거나 선택하세요</h2><p class="note">영문 INCI 성분표를 정면에서 선명하게 촬영해 주세요. 한글을 읽을 수는 있지만 영문 성분명으로 자동 변환하지는 않습니다.</p>
 <div class="actions"><label class="file-button primary">카메라로 촬영<input id="camera" type="file" accept="image/*" capture="environment"></label><label class="file-button">사진 선택<input id="gallery" type="file" accept="image/*"></label></div>
 <img id="preview" class="preview" alt="선택한 성분표 사진" hidden>
 <button id="ocr" disabled>사진에서 글자 읽기</button><p id="ocr-status" class="status" role="status" aria-live="polite"></p><progress id="progress" max="1" value="0" hidden aria-label="글자 인식 진행률"></progress>
 <p class="note">사진의 글자 인식은 브라우저에서 처리하고, 추출한 텍스트는 서버에서 등록명과 대조합니다. 첫 실행에는 OCR 파일 다운로드가 필요합니다.</p>
 </section>
 <section class="panel" aria-labelledby="review-title"><div class="step">STEP 3 · 확인 후 분석</div><h2 id="review-title">읽어낸 성분명을 확인하세요</h2><details><summary>OCR 원문 확인 · 다시 편집하기</summary><label class="field-label" for="raw-text">사진에서 읽은 원문</label><textarea id="raw-text" placeholder="사진에서 읽은 글자가 여기에 표시됩니다."></textarea><button id="split" type="button">원문 정리 · 등록 성분명 대조</button></details>
+<section class="panel" aria-labelledby="review-title"><div class="step">STEP 2 · 확인 후 분석</div><h2 id="review-title">읽어낸 성분명을 확인하세요</h2><details><summary>OCR 원문 확인 · 다시 편집하기</summary><label class="field-label" for="raw-text">사진에서 읽은 원문</label><textarea id="raw-text" placeholder="사진에서 읽은 글자가 여기에 표시됩니다."></textarea><button id="split" type="button">원문 정리 · 등록 성분명 대조</button></details>
 <div id="cleanup-review" hidden><p id="cleanup-summary" class="note"></p><details id="cleanup-details" hidden><summary>제외된 항목 보기</summary><p id="cleanup-items" class="note" style="overflow-wrap:anywhere"></p><p class="note">등록명이나 설명을 확인하지 못한 항목입니다. 제품에 없는 성분이나 유해 성분이라는 뜻은 아닙니다.</p></details></div>
 <label class="field-label" for="ingredients">영문 성분명 · 한 줄에 하나씩</label><textarea id="ingredients" placeholder="직접 입력해도 됩니다.&#10;GLYCERIN&#10;NIACINAMIDE" spellcheck="false"></textarea>
 <p class="note">조회 가능한 영문 성분만 분석 목록에 남깁니다. 제외된 내용은 토글과 OCR 원문에서 확인할 수 있습니다.</p>
 <div class="actions"><button class="primary" id="analyze">확인한 성분 분석하기</button><button id="samples">시연용 예시 불러오기</button></div><p id="example-note" class="callout" hidden>검증 데이터에서 예측이 맞은 사례입니다. 전체 성능을 대표하지 않습니다. 입력을 편집하면 예시 성분 안내만 유지됩니다.</p><p id="status" class="status" role="status" aria-live="polite"></p>
 </section>
 <section id="results" class="panel" hidden aria-labelledby="result-title"><div class="step">RESULT · 직접 학습한 모델과 관리 기준</div><h2 id="result-title">내 피부 타입과 연결되는 기능</h2><p id="skin-result" class="note"></p><p id="model-result" class="note"></p><details id="result-excluded" hidden><summary>분석에서 제외된 항목</summary><p id="result-excluded-names" class="note" style="overflow-wrap:anywhere"></p></details><div id="recommendation" class="recommendation" aria-live="polite"></div><div class="callout">조회 가능한 일부 성분을 기준으로 한 결과입니다. 성분 기능은 SVM의 추정이고 피부 타입 연결은 자료를 참고한 개발자 규칙입니다. 함량·제형·개인 반응은 반영하지 않습니다.</div><details id="ingredient-predictions"><summary>성분별 모델 예측 자세히 보기</summary><div id="result-list"></div></details></section>
+<section id="results" class="panel" hidden aria-labelledby="result-title"><div class="step">RESULT · 성분 기능 기반 추천</div><h2 id="result-title">피부 타입별 추천 결과</h2><p id="model-result" class="note"></p><details id="result-excluded" hidden><summary>분석에서 제외된 항목</summary><p id="result-excluded-names" class="note" style="overflow-wrap:anywhere"></p></details><div id="recommendation" class="recommendation" aria-live="polite"></div><div class="callout">분석된 성분의 기능과 개발자가 정한 관리 기준에 따른 참고용 추천입니다. 성분 개수는 함량이나 효과의 크기가 아니며, 실제 피부 적합성은 검증하지 않았습니다. 제형·개인 반응·미조회 성분은 순위에 반영되지 않습니다.</div><details id="ingredient-predictions"><summary>성분별 모델 예측 자세히 보기</summary><div id="result-list"></div></details></section>
 <footer>TF-IDF + Linear SVM · 피부 보습 / 피부 유연화 / 피지 조절 / 피부 보호 / 수분 증발 억제 / 불편감 완화<br>OCR은 기존 도구를 사용하며, 기능 분류는 직접 학습한 모델을 사용합니다.</footer>
 </main>
 <script>
@@ -65,17 +70,34 @@ const SKIN_RULES = {
 function buildSkinRecommendation(results,skin){
   const rule=SKIN_RULES[skin];if(!rule)return null;
   const ingredientsByFunction=new Map();let completed=0;
+function buildSkinRankings(results){
+  const ingredientsByFunction=new Map();const analyzedNames=new Set();
   for(const result of results){
     if(result.status!=='predicted')continue;completed++;
+    if(result.status!=='predicted')continue;
+    const name=normalizeName(result.ingredient);analyzedNames.add(name);
     for(const f of result.functions||[]){
       if(!f.predicted)continue;
       if(!ingredientsByFunction.has(f.label))ingredientsByFunction.set(f.label,new Set());
       ingredientsByFunction.get(f.label).add(result.ingredient);
+      ingredientsByFunction.get(f.label).add(name);
     }
   }
+  const rankings=Object.entries(SKIN_RULES).map(([skin,rule])=>{
   const targets=[...new Set(rule.groups.flatMap(group=>group.labels))];
   const matched=targets.filter(label=>ingredientsByFunction.has(label));
   return {skin,rule,completed,total:results.length,matched,targets,ingredientsByFunction};
+    const targets=[...new Set(rule.groups.flatMap(group=>group.labels))];
+    const matched=targets.filter(label=>ingredientsByFunction.has(label));
+    const names=new Set(matched.flatMap(label=>[...ingredientsByFunction.get(label)]));
+    return {skin,rule,targets,matched,names:[...names],count:names.size};
+  }).sort((a,b)=>b.count-a.count);
+  let rank=0,previousCount=null;
+  for(let i=0;i<rankings.length;i++){
+    if(rankings[i].count!==previousCount)rank=i+1;
+    rankings[i].rank=rank;previousCount=rankings[i].count;
+  }
+  return {rankings,ingredientsByFunction,analyzedCount:analyzedNames.size};
 }
 function appendText(parent,tag,text,className){const el=document.createElement(tag);el.textContent=text;if(className)el.className=className;parent.appendChild(el);return el;}
 function renderSkinRecommendation(results,skin){
@@ -103,6 +125,41 @@ function renderSkinRecommendation(results,skin){
   const sources=document.createElement('ul');sources.className='source-list';
   for(const key of rule.sources){const source=RULE_SOURCES[key];const li=document.createElement('li');const a=appendText(li,'a',source.title);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';sources.appendChild(li);}
   details.appendChild(sources);box.appendChild(details);
+function renderSkinRankings(results){
+  const box=$('recommendation');box.replaceChildren();
+  const {rankings,ingredientsByFunction,analyzedCount}=buildSkinRankings(results);
+  const topCount=rankings[0].count;
+  if(!analyzedCount){appendText(box,'h3','분석할 수 있는 성분이 없어 추천을 보류했어요');return;}
+  if(!topCount){appendText(box,'h3','피부 타입을 추천할 정보가 부족해요');appendText(box,'p','예측된 기능이 관리 기준과 연결되지 않았습니다. 제품이 부적합하다는 뜻은 아닙니다.','note');}
+  else{
+    const winners=rankings.filter(r=>r.count===topCount).map(r=>r.skin);
+    appendText(box,'p','분석된 성분의 기능 기준으로','result-label');
+    appendText(box,'h3',winners.length===1?`이 화장품은 ${winners[0]} 피부에 우선 추천해요`:`이 화장품은 ${winners.join('·')} 피부에 공동 추천해요`);
+    appendText(box,'p',`분석한 ${analyzedCount}개 성분 중 ${topCount}개가 해당 관리 목적과 연결됩니다. 어떤 기능 때문인지 아래 항목을 눌러 확인하세요.`);
+  }
+  const list=document.createElement('div');list.className='skin-ranking';
+  for(const entry of rankings){
+    const item=document.createElement('details');
+    const tied=rankings.filter(r=>r.count===entry.count).length>1;
+    const summary=appendText(item,'summary',entry.count?`${tied?'공동 ':''}${entry.rank}위 · ${entry.skin}`:`${entry.skin} · 추천 근거 부족`);
+    appendText(summary,'span',`관련 성분 ${entry.count}개`,'rank-count');
+    appendText(item,'p',entry.rule.goal,'note');
+    if(entry.matched.length){for(const label of entry.matched){
+      const reason=document.createElement('div');reason.className='ranking-reason';
+      appendText(reason,'strong',FUNCTION_NAMES[label]);
+      appendText(reason,'p',[...ingredientsByFunction.get(label)].join(', '),'note');item.appendChild(reason);
+    }}else appendText(item,'p','이 관리 목적에 연결되는 양성 예측이 없습니다.','note');
+    const missing=entry.targets.filter(label=>!entry.matched.includes(label));
+    if(missing.length)appendText(item,'p',`추가로 확인할 기능: ${missing.map(label=>FUNCTION_NAMES[label]).join(', ')}`,'note');
+    appendText(item,'p',entry.rule.tip,'note');
+    const sources=document.createElement('div');sources.className='note';appendText(sources,'span','참고 자료: ');
+    entry.rule.sources.forEach((key,i)=>{if(i)appendText(sources,'span',' · ');const source=RULE_SOURCES[key];const a=appendText(sources,'a',source.title);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';});item.appendChild(sources);
+    list.appendChild(item);
+  }
+  box.appendChild(list);
+  const methodology=document.createElement('details');appendText(methodology,'summary','추천 순위 계산 방법');
+  appendText(methodology,'p','피부 타입별 관리 기능에 해당하는 양성 예측이 하나라도 있는 성분을 한 번씩 셉니다. 같은 성분이 여러 기능에 해당해도 타입 안에서는 중복 집계하지 않습니다. 여러 피부 타입에 공통으로 집계될 수 있고, 개수가 같으면 공동 순위로 표시합니다.','note');
+  appendText(methodology,'p','관리 기능의 범위가 넓은 타입은 관련 성분이 더 많이 집계될 수 있습니다. 근거 자료는 일반적인 관리 방향을 참고한 것이며 이 순위 산식을 검증한 것이 아닙니다. 피부 보호는 공통 정보로만 표시하며 저자극·장벽 회복으로 해석하지 않습니다.','note');box.appendChild(methodology);
 }
 function setStatus(id, text, error=false){$(id).textContent=text;$(id).classList.toggle('error',error);}
 function normalizeName(value){return value.normalize('NFKC').replace(/\s+/g,' ').trim().toUpperCase();}
@@ -230,6 +287,7 @@ $('samples').addEventListener('click',async()=>{
   try{const data=await requestJSON();if(!data.samples?.length)throw new Error('저장된 예시가 없습니다.');$('ingredients').value=data.samples.join('\n');lastCleanup=null;$('cleanup-review').hidden=true;$('example-note').hidden=false;$('results').hidden=true;setStatus('status','예시를 불러왔습니다. 분석 버튼을 눌러 주세요.');}catch(error){setStatus('status',error.message,true);}finally{$('samples').disabled=false;}
 });
 function renderResults(data,skin){
+function renderResults(data){
   lastAnalysis=data;
   $('ingredient-predictions').open=false;
   const list=$('result-list');list.replaceChildren();let completed=0;
@@ -245,6 +303,7 @@ function renderResults(data,skin){
   }
   $('skin-result').textContent=skin?`선택한 피부 타입: ${skin}`:'피부 타입 미선택';
   renderSkinRecommendation(data.results,skin);
+  renderSkinRankings(data.results);
   const earlierExcluded=lastCleanup&&lastCleanup.input===$('ingredients').value?lastCleanup.excluded:[];
   const excludedNames=[...new Set([...earlierExcluded,...data.results.filter(r=>r.status!=='predicted').map(r=>r.ingredient)])];
   $('model-result').textContent=`${completed}개 성분 분석 완료${excludedNames.length?` · 조회가 어려운 ${excludedNames.length}개 항목 제외`:''}`;
@@ -257,6 +316,7 @@ $('analyze').addEventListener('click',async()=>{
   if(ingredients.some(n=>/[가-힣]/.test(n))){setStatus('status','한글 성분명이 포함되어 있습니다. 영문 INCI 이름으로 수정한 뒤 분석해 주세요.',true);return;}
   analyzeBusy=true;$('analyze').disabled=true;$('samples').disabled=true;$('ocr').disabled=true;$('camera').disabled=true;$('gallery').disabled=true;$('split').disabled=true;$('ingredients').readOnly=true;$('results').hidden=true;setStatus('status','저장한 SVM으로 성분 기능을 예측합니다.');
   try{const data=await requestJSON({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ingredients})});if(!Array.isArray(data.results))throw new Error('예측 응답 형식을 확인해 주세요.');renderResults(data,document.querySelector('input[name="skin"]:checked')?.value);setStatus('status','분석이 완료되었습니다.');}catch(error){setStatus('status',error.message,true);}finally{analyzeBusy=false;$('analyze').disabled=false;$('samples').disabled=false;$('ocr').disabled=!imageBlob;$('camera').disabled=false;$('gallery').disabled=false;$('split').disabled=false;$('ingredients').readOnly=false;}
+  try{const data=await requestJSON({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ingredients})});if(!Array.isArray(data.results))throw new Error('예측 응답 형식을 확인해 주세요.');renderResults(data);setStatus('status','분석이 완료되었습니다.');}catch(error){setStatus('status',error.message,true);}finally{analyzeBusy=false;$('analyze').disabled=false;$('samples').disabled=false;$('ocr').disabled=!imageBlob;$('camera').disabled=false;$('gallery').disabled=false;$('split').disabled=false;$('ingredients').readOnly=false;}
 });
 window.addEventListener('pagehide',()=>{if(previewURL)URL.revokeObjectURL(previewURL);});
 </script>
