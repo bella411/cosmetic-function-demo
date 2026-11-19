@@ -61,7 +61,7 @@
 <div id="cleanup-review" hidden><p id="cleanup-summary" class="note"></p><details id="cleanup-details" hidden><summary>제외된 항목 보기</summary><p id="cleanup-items" class="note" style="overflow-wrap:anywhere"></p><p class="note">등록명이나 설명을 확인하지 못한 항목입니다. 제품에 없는 성분이나 유해 성분이라는 뜻은 아닙니다.</p></details></div>
 <label class="field-label" for="ingredients">영문 성분명 · 한 줄에 하나씩</label><textarea id="ingredients" placeholder="직접 입력해도 됩니다.&#10;GLYCERIN&#10;NIACINAMIDE" spellcheck="false"></textarea>
 <p class="note">조회 가능한 영문 성분만 분석 목록에 남깁니다. 제외된 내용은 토글과 OCR 원문에서 확인할 수 있습니다.</p>
-<div class="actions"><button class="primary" id="analyze">확인한 성분 분석하기</button><button id="samples">시연용 예시 불러오기</button></div><p id="example-note" class="callout" hidden>검증 데이터에서 예측이 맞은 사례입니다. 전체 성능을 대표하지 않습니다. 입력을 편집하면 예시 성분 안내만 유지됩니다.</p><p id="status" class="status" role="status" aria-live="polite"></p>
+<div class="actions"><button class="primary" id="analyze">확인한 성분 분석하기</button></div><p id="status" class="status" role="status" aria-live="polite"></p>
 </section>
 </div>
 <section id="results" class="panel" hidden aria-labelledby="result-title"><div class="step">RESULT · 성분 기능 기반 추천</div><h2 id="result-title">피부 타입별 추천 결과</h2><p id="model-result" class="note"></p><details id="result-excluded" hidden><summary>분석에서 제외된 항목</summary><p id="result-excluded-names" class="note" style="overflow-wrap:anywhere"></p></details><div id="recommendation" class="recommendation" aria-live="polite"></div><div class="callout">분석된 성분의 기능과 개발자가 정한 관리 기준에 따른 참고용 추천입니다. 성분 개수는 함량이나 효과의 크기가 아니며, 실제 피부 적합성은 검증하지 않았습니다. 제형·개인 반응·미조회 성분은 순위에 반영되지 않습니다.</div><details id="ingredient-predictions"><summary>성분별 모델 예측 자세히 보기</summary><div id="result-list"></div></details></section>
@@ -270,7 +270,7 @@ async function prepareIngredientText(text){
   const accepted=data.records.filter(r=>['matched','normalized','alias'].includes(r.status));
   const excluded=data.records.filter(r=>!['matched','normalized','alias'].includes(r.status));
   data.names=[...new Set(accepted.map(r=>r.name))];
-  $('ingredients').value=data.names.join('\n');$('results').hidden=true;$('example-note').hidden=true;
+  $('ingredients').value=data.names.join('\n');$('results').hidden=true;
   lastCleanup={excluded:excluded.map(r=>r.source||r.name),input:$('ingredients').value};
   $('cleanup-summary').textContent=`${data.names.length}개 성분을 분석 목록에 넣었습니다.${excluded.length?` 조회가 어려운 ${excluded.length}개 항목은 제외했습니다.`:''}`;
   $('cleanup-items').textContent=lastCleanup.excluded.join(' · ');
@@ -299,7 +299,7 @@ async function choosePhoto(event){
   const input=event.target;const file=input.files?.[0];if(!file)return;
   if(file.size>15*1024*1024){setStatus('ocr-status','사진은 15MB 이하로 선택해 주세요.',true);input.value='';return;}
   if(!file.size){setStatus('ocr-status','비어 있는 파일입니다. 원본 사진을 다시 선택해 주세요.',true);input.value='';return;}
-  $('ocr').disabled=true;$('camera').disabled=true;$('gallery').disabled=true;$('analyze').disabled=true;$('samples').disabled=true;imageBlob=null;
+  $('ocr').disabled=true;$('camera').disabled=true;$('gallery').disabled=true;$('analyze').disabled=true;imageBlob=null;
   if(previewURL){URL.revokeObjectURL(previewURL);previewURL=null;}
   $('preview').hidden=true;$('results').hidden=true;
   setStatus('ocr-status',`${file.name} · 사진을 읽는 중입니다.`);
@@ -320,7 +320,7 @@ async function choosePhoto(event){
     imageBlob=prepared;$('preview').src=prepared;$('preview').hidden=false;$('raw-text').value='';
     setStatus('ocr-status',`${file.name} · 사진 준비 완료 (${img.naturalWidth} × ${img.naturalHeight}). 글자 읽기를 눌러 주세요.`);
   }catch(error){console.error('사진 준비 실패',error);setStatus('ocr-status',error.message||'사진을 준비하는 중 오류가 발생했습니다.',true);}
-  finally{input.value='';$('ocr').disabled=!imageBlob;$('camera').disabled=false;$('gallery').disabled=false;$('analyze').disabled=false;$('samples').disabled=false;}
+  finally{input.value='';$('ocr').disabled=!imageBlob;$('camera').disabled=false;$('gallery').disabled=false;$('analyze').disabled=false;}
 }
 $('camera').addEventListener('change',choosePhoto);$('gallery').addEventListener('change',choosePhoto);
 function loadOCRScript(){
@@ -337,34 +337,29 @@ async function getWorker(){
 $('ocr').addEventListener('click',async()=>{
   if(!imageBlob||isOCRBusy)return;
   if($('ingredients').value.trim()&&!confirm('현재 성분 목록을 사진에서 읽은 글자로 바꿀까요?'))return;
-  isOCRBusy=true;$('ocr').disabled=true;$('camera').disabled=true;$('gallery').disabled=true;$('analyze').disabled=true;$('samples').disabled=true;$('split').disabled=true;
+  isOCRBusy=true;$('ocr').disabled=true;$('camera').disabled=true;$('gallery').disabled=true;$('analyze').disabled=true;$('split').disabled=true;
   $('progress').hidden=false;$('progress').value=0;setStatus('ocr-status','글자 인식 도구를 준비합니다. 첫 실행에는 잠시 걸릴 수 있습니다.');
   try{
     const ocr=await getWorker();const output=await ocr.recognize(imageBlob);const text=output.data.text.trim();
     if(!text)throw new Error('글자를 찾지 못했습니다. 성분표 부분을 크게 다시 촬영해 주세요.');
-    $('raw-text').value=text;$('ingredients').value=splitIngredients(text);$('example-note').hidden=true;$('results').hidden=true;
+    $('raw-text').value=text;$('ingredients').value=splitIngredients(text);$('results').hidden=true;
     setStatus('ocr-status','글자를 읽었습니다. 등록 성분명과 대조하는 중입니다.');
     try{const cleaned=await prepareIngredientText(text);setStatus('ocr-status',cleaned.names.length?`${cleaned.names.length}개 성분을 정리했습니다. 분석 버튼을 눌러 주세요.`:'조회 가능한 성분을 찾지 못했습니다. 더 선명한 사진을 사용하거나 영문 성분명을 직접 입력해 주세요.');}
     catch(error){$('cleanup-review').hidden=true;setStatus('ocr-status',`OCR은 완료됐지만 등록명 대조에 실패했습니다. ${error.message} 원문을 직접 수정할 수 있습니다.`,true);}
     $('review-title').scrollIntoView({behavior:'smooth',block:'start'});
   }catch(error){setStatus('ocr-status',error.message||'글자 인식에 실패했습니다. 다시 시도해 주세요.',true);}
-  finally{isOCRBusy=false;$('ocr').disabled=false;$('camera').disabled=false;$('gallery').disabled=false;$('analyze').disabled=analyzeBusy;$('samples').disabled=false;$('split').disabled=false;$('progress').hidden=true;}
+  finally{isOCRBusy=false;$('ocr').disabled=false;$('camera').disabled=false;$('gallery').disabled=false;$('analyze').disabled=analyzeBusy;$('split').disabled=false;$('progress').hidden=true;}
 });
 $('split').addEventListener('click',async()=>{
   if(!$('raw-text').value.trim())return;
   if($('ingredients').value.trim()&&!confirm('현재 성분 목록을 원문에서 다시 만들까요?'))return;
-  $('split').disabled=true;$('analyze').disabled=true;$('samples').disabled=true;$('ocr').disabled=true;$('camera').disabled=true;$('gallery').disabled=true;
+  $('split').disabled=true;$('analyze').disabled=true;$('ocr').disabled=true;$('camera').disabled=true;$('gallery').disabled=true;
   setStatus('status','원문을 정리하고 등록 성분명과 대조하는 중입니다.');
   try{const cleaned=await prepareIngredientText($('raw-text').value);setStatus('status',cleaned.names.length?'조회 가능한 성분만 정리했습니다. 분석 버튼을 눌러 주세요.':'조회 가능한 성분이 없습니다. 영문 성분명을 직접 입력하거나 사진을 다시 선택해 주세요.');}
   catch(error){setStatus('status',error.message,true);}
-  finally{$('split').disabled=false;$('analyze').disabled=false;$('samples').disabled=false;$('ocr').disabled=!imageBlob;$('camera').disabled=false;$('gallery').disabled=false;}
+  finally{$('split').disabled=false;$('analyze').disabled=false;$('ocr').disabled=!imageBlob;$('camera').disabled=false;$('gallery').disabled=false;}
 });
 $('ingredients').addEventListener('input',()=>{$('results').hidden=true;lastCleanup=null;$('cleanup-review').hidden=true;});
-$('samples').addEventListener('click',async()=>{
-  if($('ingredients').value.trim()&&!confirm('현재 입력을 시연용 예시로 바꿀까요?'))return;
-  $('samples').disabled=true;setStatus('status','예시를 불러오는 중입니다.');
-  try{const data=await requestJSON();if(!data.samples?.length)throw new Error('저장된 예시가 없습니다.');$('ingredients').value=data.samples.join('\n');lastCleanup=null;$('cleanup-review').hidden=true;$('example-note').hidden=false;$('results').hidden=true;setStatus('status','예시를 불러왔습니다. 분석 버튼을 눌러 주세요.');}catch(error){setStatus('status',error.message,true);}finally{$('samples').disabled=false;}
-});
 function renderResults(data){
   lastAnalysis=data;
   $('ingredient-predictions').open=false;
@@ -390,8 +385,8 @@ $('analyze').addEventListener('click',async()=>{
   const ingredients=uniqueNames($('ingredients').value);if(!ingredients.length||ingredients.length>100){setStatus('status','성분명을 한 줄에 하나씩, 1~100개 입력해 주세요.',true);return;}
   if(ingredients.some(n=>n.length>3000)){setStatus('status','너무 긴 항목이 있습니다. 성분별 줄바꿈을 확인해 주세요.',true);return;}
   if(ingredients.some(n=>/[가-힣]/.test(n))){setStatus('status','한글 성분명이 포함되어 있습니다. 영문 INCI 이름으로 수정한 뒤 분석해 주세요.',true);return;}
-  analyzeBusy=true;$('analyze').disabled=true;$('samples').disabled=true;$('ocr').disabled=true;$('camera').disabled=true;$('gallery').disabled=true;$('split').disabled=true;$('ingredients').readOnly=true;$('results').hidden=true;setStatus('status','저장한 SVM으로 성분 기능을 예측합니다.');
-  try{const data=await requestJSON({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ingredients})});if(!Array.isArray(data.results))throw new Error('예측 응답 형식을 확인해 주세요.');renderResults(data);setStatus('status','분석이 완료되었습니다.');}catch(error){setStatus('status',error.message,true);}finally{analyzeBusy=false;$('analyze').disabled=false;$('samples').disabled=false;$('ocr').disabled=!imageBlob;$('camera').disabled=false;$('gallery').disabled=false;$('split').disabled=false;$('ingredients').readOnly=false;}
+  analyzeBusy=true;$('analyze').disabled=true;$('ocr').disabled=true;$('camera').disabled=true;$('gallery').disabled=true;$('split').disabled=true;$('ingredients').readOnly=true;$('results').hidden=true;setStatus('status','저장한 SVM으로 성분 기능을 예측합니다.');
+  try{const data=await requestJSON({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ingredients})});if(!Array.isArray(data.results))throw new Error('예측 응답 형식을 확인해 주세요.');renderResults(data);setStatus('status','분석이 완료되었습니다.');}catch(error){setStatus('status',error.message,true);}finally{analyzeBusy=false;$('analyze').disabled=false;$('ocr').disabled=!imageBlob;$('camera').disabled=false;$('gallery').disabled=false;$('split').disabled=false;$('ingredients').readOnly=false;}
 });
 window.addEventListener('pagehide',()=>{if(previewURL)URL.revokeObjectURL(previewURL);});
 renderSkinGuide();
