@@ -125,26 +125,49 @@ async function requestJSON(options){
   if(!response.ok)throw new Error(data.error||`요청 실패 (${response.status})`);
   return data;
 }
+function readPhotoFile(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>typeof reader.result==='string'?resolve(reader.result):reject(new Error('사진 파일을 읽지 못했습니다.'));
+    reader.onerror=()=>reject(new Error(`사진 파일 읽기 실패: ${reader.error?.message||'파일 접근 오류'}`));
+    reader.onabort=()=>reject(new Error('사진 파일 읽기가 중단되었습니다.'));
+    reader.readAsDataURL(file);
+  });
+}
+function decodePhoto(dataURL){
+  return new Promise((resolve,reject)=>{
+    const img=document.createElement('img');
+    img.onload=()=>img.naturalWidth&&img.naturalHeight?resolve(img):reject(new Error('사진의 가로·세로 크기를 확인할 수 없습니다.'));
+    img.onerror=()=>reject(new Error('브라우저가 사진 내용을 해석하지 못했습니다. 미리보기 앱에서 PNG/JPEG로 내보낸 뒤 다시 선택해 주세요.'));
+    img.src=dataURL;
+  });
+}
 async function choosePhoto(event){
-  const file=event.target.files?.[0];event.target.value='';if(!file)return;
-  if(file.size>15*1024*1024){setStatus('ocr-status','사진은 15MB 이하로 선택해 주세요.',true);return;}
-  $('ocr').disabled=true;imageBlob=null;
+  const input=event.target;const file=input.files?.[0];if(!file)return;
+  if(file.size>15*1024*1024){setStatus('ocr-status','사진은 15MB 이하로 선택해 주세요.',true);input.value='';return;}
+  if(!file.size){setStatus('ocr-status','비어 있는 파일입니다. 원본 사진을 다시 선택해 주세요.',true);input.value='';return;}
+  $('ocr').disabled=true;$('camera').disabled=true;$('gallery').disabled=true;$('analyze').disabled=true;$('samples').disabled=true;imageBlob=null;
   if(previewURL){URL.revokeObjectURL(previewURL);previewURL=null;}
-  $('preview').hidden=true;
-  setStatus('ocr-status','사진을 준비하는 중입니다.');
+  $('preview').hidden=true;$('results').hidden=true;
+  setStatus('ocr-status',`${file.name} · 사진을 읽는 중입니다.`);
   try{
-    const sourceURL=URL.createObjectURL(file);
-    const img=new Image();
-    try{await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=sourceURL;});}finally{URL.revokeObjectURL(sourceURL);}
-    const scale=Math.min(1,2400/Math.max(img.naturalWidth,img.naturalHeight));
-    const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
-    canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-    imageBlob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.94));
-    if(!imageBlob)throw new Error('이미지 변환 실패');
-    previewURL=URL.createObjectURL(imageBlob);$('preview').src=previewURL;$('preview').hidden=false;$('raw-text').value='';
-    $('results').hidden=true;setStatus('ocr-status','사진을 확인하고 글자 읽기를 눌러 주세요.');
-  }catch{setStatus('ocr-status','사진을 열지 못했습니다. JPEG 또는 PNG 사진으로 다시 선택해 주세요.',true);}
-  $('ocr').disabled=!imageBlob;
+    const source=await readPhotoFile(file);
+    const img=await decodePhoto(source);
+    // Use the decoded original if resizing is unavailable; conversion is optional.
+    let prepared=source;
+    if(Math.max(img.naturalWidth,img.naturalHeight)>2400){
+      try{
+        const scale=2400/Math.max(img.naturalWidth,img.naturalHeight);
+        const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+        const ctx=canvas.getContext('2d');if(!ctx)throw new Error('canvas unavailable');
+        ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        const resized=canvas.toDataURL('image/png');if(resized.startsWith('data:image/'))prepared=resized;
+      }catch(error){console.warn('사진 크기 조정 생략: 원본으로 인식합니다.',error);}
+    }
+    imageBlob=prepared;$('preview').src=prepared;$('preview').hidden=false;$('raw-text').value='';
+    setStatus('ocr-status',`${file.name} · 사진 준비 완료 (${img.naturalWidth} × ${img.naturalHeight}). 글자 읽기를 눌러 주세요.`);
+  }catch(error){console.error('사진 준비 실패',error);setStatus('ocr-status',error.message||'사진을 준비하는 중 오류가 발생했습니다.',true);}
+  finally{input.value='';$('ocr').disabled=!imageBlob;$('camera').disabled=false;$('gallery').disabled=false;$('analyze').disabled=false;$('samples').disabled=false;}
 }
 $('camera').addEventListener('change',choosePhoto);$('gallery').addEventListener('change',choosePhoto);
 function loadOCRScript(){
