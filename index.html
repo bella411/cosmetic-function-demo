@@ -14,6 +14,7 @@ button,.file-button{display:inline-flex;align-items:center;justify-content:cente
 <style>
 .recommendation{margin:20px 0;padding:20px;background:#f3f7ff;border-radius:14px;border:1px solid #d8e4fa}.recommendation h3{font-size:21px}.rule-item{margin:12px 0;padding:12px 0;border-top:1px solid #d8e4fa}.rule-item p{overflow-wrap:anywhere}.rule-item strong{display:block}.source-list{padding-left:22px}.source-list a{color:#2357c6}.section-title{margin-top:26px}
 .skin-ranking{margin-top:18px}.skin-ranking>details{border-top:1px solid #cfdaeb;padding:14px 0;margin:0}.skin-ranking>details>summary{font-size:16px;font-weight:650;color:var(--ink)}.rank-count{font-weight:400;color:var(--muted);font-size:14px;margin-left:8px}.ranking-reason{padding:8px 0}.ranking-reason p{overflow-wrap:anywhere}
+.function-badge,.skin-badge,.total-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:9px;font-size:14px;font-weight:650;line-height:1.5;vertical-align:middle;margin:3px 5px 3px 0;max-width:100%;overflow-wrap:anywhere}.function-badge{background:#e3edff;color:#214b96}.fn-humectant{background:#dff2fb;color:#155b7b}.fn-emollient{background:#e3edff;color:#214b96}.fn-sebum{background:#e2f3e8;color:#22623b}.fn-protect{background:#fff0d7;color:#825119}.fn-occlusive{background:#eee6fb;color:#634092}.fn-soothing{background:#fbe7ed;color:#8c3c57}.skin-dry{background:#fff0d7;color:#825119}.skin-oily{background:#dff2fb;color:#155b7b}.skin-combination{background:#eee6fb;color:#634092}.skin-normal{background:#e2f3e8;color:#22623b}.skin-sensitive{background:#fbe7ed;color:#8c3c57}.total-badge{background:#e8edf3;color:#536478}.function-badge.zero{background:#edf0f5;color:#637185;font-weight:400}.function-overview{margin:18px 0}.function-stat{padding:12px 0;border-bottom:1px solid #d8e4fa}.function-stat:last-child{border:0}.type-links{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:7px}.type-links-label{font-size:14px;color:var(--muted);margin-right:6px}.function-count-sentence{display:flex;align-items:center;flex-wrap:wrap;gap:4px}.reason-heading{display:flex;align-items:center;flex-wrap:wrap;gap:3px;font-weight:650}
 </style>
 </head>
 <body>
@@ -48,6 +49,11 @@ const FUNCTION_NAMES = {
   'SOOTHING':'피부·두피 불편감 완화'
 };
 const H='SKIN CONDITIONING - HUMECTANT', E='SKIN CONDITIONING - EMOLLIENT', O='SKIN CONDITIONING - OCCLUSIVE', A='ANTI-SEBUM', S='SOOTHING';
+const FUNCTION_STYLE={
+  [H]:'fn-humectant',[E]:'fn-emollient',[A]:'fn-sebum',
+  'SKIN PROTECTING':'fn-protect',[O]:'fn-occlusive',[S]:'fn-soothing'
+};
+const SKIN_STYLE={'건성':'skin-dry','지성':'skin-oily','복합성':'skin-combination','중성':'skin-normal','민감성':'skin-sensitive'};
 const RULE_SOURCES = {
   kda:{title:'대한피부과학회 · 보습제',url:'https://derma.or.kr/new/general/treatment.php?mod=document&uid=3326'},
   oily:{title:'미국피부과학회 · 지성 피부 관리',url:'https://www.aad.org/public/everyday-care/skin-care-basics/dry/oily-skin'},
@@ -111,6 +117,33 @@ function buildSkinRankings(results){
   return {rankings,ingredientsByFunction,analyzedCount:analyzedNames.size};
 }
 function appendText(parent,tag,text,className){const el=document.createElement(tag);el.textContent=text;if(className)el.className=className;parent.appendChild(el);return el;}
+function addFunctionBadge(parent,label,count){
+  return appendText(parent,'span',`${typeof count==='number'?`${count}개 · `:''}${FUNCTION_NAMES[label]}`,`function-badge ${FUNCTION_STYLE[label]||''}${count===0?' zero':''}`);
+}
+function addSkinBadge(parent,skin){return appendText(parent,'span',skin,`skin-badge ${SKIN_STYLE[skin]||''}`);}
+function renderFunctionOverview(parent,ingredientsByFunction,analyzedCount){
+  const section=document.createElement('div');section.className='function-overview';
+  appendText(section,'p','기능별 분류 결과','result-label');
+  const positive=Object.keys(FUNCTION_NAMES).filter(label=>(ingredientsByFunction.get(label)?.size||0)>0)
+    .sort((a,b)=>ingredientsByFunction.get(b).size-ingredientsByFunction.get(a).size);
+  for(const label of positive){
+    const count=ingredientsByFunction.get(label).size;
+    const row=document.createElement('div');row.className='function-stat';
+    const sentence=document.createElement('p');sentence.className='function-count-sentence';
+    appendText(sentence,'span',`분석 성분 ${analyzedCount}개`,'total-badge');appendText(sentence,'span','중');
+    addFunctionBadge(sentence,label,count);appendText(sentence,'span','기능으로 분류했어요.');row.appendChild(sentence);
+    const related=Object.entries(SKIN_RULES).filter(([,rule])=>rule.groups.some(group=>group.labels.includes(label))).map(([skin])=>skin);
+    const connections=document.createElement('div');connections.className='type-links';
+    appendText(connections,'span',related.length?'추천 기준에 연결되는 피부 타입':'공통 기능 정보','type-links-label');
+    related.forEach(skin=>addSkinBadge(connections,skin));
+    if(!related.length)appendText(connections,'span','이 기능만으로 특정 피부 타입을 추천하지 않습니다.','note');
+    row.appendChild(connections);section.appendChild(row);
+  }
+  const zero=Object.keys(FUNCTION_NAMES).filter(label=>!ingredientsByFunction.get(label)?.size);
+  if(zero.length){const detail=document.createElement('details');appendText(detail,'summary',`양성 예측이 없는 기능 ${zero.length}개 보기`);for(const label of zero)addFunctionBadge(detail,label,0);appendText(detail,'p','모델이 양성으로 분류한 성분이 없다는 뜻이며, 실제 기능이 없다는 확정은 아닙니다.','note');section.appendChild(detail);}
+  appendText(section,'p','수치는 모델이 예측한 성분 개수입니다. 한 성분이 여러 기능에 해당할 수 있어 기능별 개수의 합은 전체 성분 수와 다를 수 있습니다.','note');
+  parent.appendChild(section);
+}
 function renderSkinRankings(results){
   const box=$('recommendation');box.replaceChildren();
   const {rankings,ingredientsByFunction,analyzedCount}=buildSkinRankings(results);
@@ -121,22 +154,21 @@ function renderSkinRankings(results){
     const winners=rankings.filter(r=>r.count===topCount).map(r=>r.skin);
     appendText(box,'p','분석된 성분의 기능 기준으로','result-label');
     appendText(box,'h3',winners.length===1?`이 화장품은 ${winners[0]} 피부에 우선 추천해요`:`이 화장품은 ${winners.join('·')} 피부에 공동 추천해요`);
-    const keyFunctions=[...new Set(rankings.filter(r=>r.count===topCount).flatMap(r=>r.matched))];
-    appendText(box,'p','추천의 핵심 기능','result-label');
-    const highlights=document.createElement('div');
-    for(const label of keyFunctions)appendText(highlights,'span',FUNCTION_NAMES[label],'badge');
-    box.appendChild(highlights);
-    appendText(box,'p','아래 피부 타입을 누르면 해당 기능이 왜 추천 이유가 되는지 볼 수 있어요.','note');
   }
+  renderFunctionOverview(box,ingredientsByFunction,analyzedCount);
+  appendText(box,'p','피부 타입별 추천 이유','result-label');
   const list=document.createElement('div');list.className='skin-ranking';
   for(const entry of rankings){
     const item=document.createElement('details');
     const tied=rankings.filter(r=>r.count===entry.count).length>1;
-    const summary=appendText(item,'summary',entry.count?`${tied?'공동 ':''}${entry.rank}위 · ${entry.skin}`:`${entry.skin} · 추천 근거 부족`);
-    appendText(summary,'span',entry.matched.length?entry.matched.map(label=>FUNCTION_NAMES[label]).join(' · '):'연결 기능 없음','rank-count');
+    const summary=appendText(item,'summary',entry.count?`${tied?'공동 ':''}${entry.rank}위 · `:'추천 근거 부족 · ');
+    addSkinBadge(summary,entry.skin);
+    for(const label of entry.matched)addFunctionBadge(summary,label);
+    if(!entry.matched.length)appendText(summary,'span','연결 기능 없음','rank-count');
     if(entry.matched.length){for(const label of entry.matched){
       const reason=document.createElement('div');reason.className='ranking-reason';
-      appendText(reason,'strong',`${FUNCTION_NAMES[label]} 때문에 추천해요`);
+      const heading=document.createElement('p');heading.className='reason-heading';
+      addFunctionBadge(heading,label);appendText(heading,'span','기능을 기준으로');addSkinBadge(heading,entry.skin);appendText(heading,'span','피부에 추천해요');reason.appendChild(heading);
       appendText(reason,'p',SKIN_FUNCTION_REASONS[entry.skin][label]);
       item.appendChild(reason);
     }}else appendText(item,'p','이 관리 목적에 연결되는 양성 예측이 없습니다.','note');
@@ -146,6 +178,8 @@ function renderSkinRankings(results){
     for(const label of entry.matched)appendText(evidence,'p',`${FUNCTION_NAMES[label]}: ${[...ingredientsByFunction.get(label)].join(', ')}`,'note');
     if(missing.length)appendText(evidence,'p',`이번 모델에서 확인하지 못한 기능: ${missing.map(label=>FUNCTION_NAMES[label]).join(', ')}`,'note');
     appendText(evidence,'p',entry.rule.tip,'note');
+    appendText(evidence,'p','추천 설명 문구는 기능 정의와 피부 관리 자료를 연결하여 개발자가 작성한 해석입니다. 논문이나 학회의 직접 인용문이 아닙니다.','note');
+    const definition=appendText(evidence,'a','CosIng 공식 기능 정의');definition.href='https://api.tech.ec.europa.eu/cosing20/1.0/api/functions/export-pdf';definition.target='_blank';definition.rel='noopener noreferrer';
     const sources=document.createElement('div');sources.className='note';appendText(sources,'span','참고 자료: ');
     entry.rule.sources.forEach((key,i)=>{if(i)appendText(sources,'span',' · ');const source=RULE_SOURCES[key];const a=appendText(sources,'a',source.title);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';});evidence.appendChild(sources);item.appendChild(evidence);
     list.appendChild(item);
